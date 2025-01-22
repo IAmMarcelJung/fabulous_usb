@@ -55,7 +55,6 @@ module tap_controller (
 
     reg [3:0] state_current;
     reg [3:0] state_next;
-    reg [4:0] timeout;
 
     always @(*) begin
         if (tms == 1'b0) begin
@@ -130,18 +129,11 @@ module tap_controller (
         // global reset
         if (trst == 1'b0) begin
             state_current <= TLRESET;
-            timeout       <= 5'b00000;
         end else begin
             state_current <= state_next;
-            timeout       <= {timeout[3:0], tms};
-            if (timeout == 5'b11111) begin
-                state_current <= TLRESET;
-                timeout       <= 5'b00000;
-            end
         end
     end
 
-    // TODO: check if should actually be trst and not 1'b1
     assign resetn_o = (state_current == TLRESET) ? 1'b0 : trst;
 
     always @(negedge clk) begin
