@@ -11,12 +11,12 @@ module LHQD1 (
     output reg Q,
     QN
 );
-    always @(*) begin
-        if (E == 1'b1) begin
-            Q  = D;
-            QN = ~D;
-        end
-    end
+    //WARNING: This has to be changed from the orignal implementation
+    // since it caused the implementation of LDCE cells which are not
+    // supported by the board
+    //TODO:: It has to be checked if this still works
+    assign Q  = E ? D : Q;
+    assign QN = !Q;
 endmodule
 
 // (MUX4PTv4) and 1.2ns (MUX16PTv2) in worse case when all select bits=0, so I think they work fine with f=50MHz.
