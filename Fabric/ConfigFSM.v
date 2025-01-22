@@ -26,7 +26,6 @@ module ConfigFSM (
     output reg [ROW_SELECT_WIDTH-1:0] RowSelect;
 
     reg       FrameStrobe;
-    //signal FrameShiftState : integer range 0 to (NUMBER_OF_ROWS + 2);
     reg [4:0] FrameShiftState;
 
     //FSM

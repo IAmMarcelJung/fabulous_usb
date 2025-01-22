@@ -110,8 +110,6 @@ module eFPGA_top #(
         .ReceiveLED          (ReceiveLED),
         // verilator lint_off PINCONNECTEMPTY
         .ComActive           (),
-        .s_clk               (),
-        .s_data              (),
         .SelfWriteData       (),
         .SelfWriteStrobe     (),
         .ConfigWriteStrobe   (),

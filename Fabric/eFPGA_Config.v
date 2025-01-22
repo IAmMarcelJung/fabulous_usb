@@ -5,8 +5,6 @@ module eFPGA_Config (
     Rx,
     ComActive,
     ReceiveLED,
-    s_clk,
-    s_data,
     SelfWriteData,
     SelfWriteStrobe,
     ConfigWriteData,
@@ -29,9 +27,6 @@ module eFPGA_Config (
     input Rx;
     output ComActive;
     output ReceiveLED;
-    // BitBang configuration port
-    input s_clk;
-    input s_data;
     // CPU configuration port
     input [32-1:0] SelfWriteData;  // configuration data write port
     input SelfWriteStrobe;  // must decode address and write enable
@@ -60,11 +55,6 @@ module eFPGA_Config (
     wire        UART_ComActive;
     wire        UART_LED;
 
-    wire [31:0] BitBangWriteData;
-    wire        BitBangWriteStrobe;
-    wire [31:0] BitBangWriteData_Mux;
-    wire        BitBangWriteStrobe_Mux;
-    wire        BitBangActive;
 
     wire [31:0] JTAGWriteData_Mux;
     wire        JTAGWriteStrobe_Mux;
@@ -83,40 +73,22 @@ module eFPGA_Config (
         .ReceiveLED (UART_LED)
     );
 
-    //bitbang
-    bitbang Inst_bitbang (
-        .s_clk (s_clk),
-        .s_data(s_data),
-        .strobe(BitBangWriteStrobe),
-        .data  (BitBangWriteData),
-        .active(BitBangActive),
-        .clk   (CLK),
-        .resetn(resetn)
-    );
-
-    // BitBangActive is used to switch between bitbang or internal configuration port (BitBang has therefore higher priority)
-    assign BitBangWriteData_Mux   = BitBangActive ? BitBangWriteData : SelfWriteData;
-    assign BitBangWriteStrobe_Mux = BitBangActive ? BitBangWriteStrobe : SelfWriteStrobe;
 
     // ComActive is used to switch between (bitbang+internal) port or UART (UART has therefore higher priority
-    assign UART_WriteData_Mux     = UART_ComActive ? UART_WriteData : BitBangWriteData_Mux;
-    assign UART_WriteStrobe_Mux   = UART_ComActive ? UART_WriteStrobe : BitBangWriteStrobe_Mux;
+    assign UART_WriteData_Mux   = UART_ComActive ? UART_WriteData : SelfWriteData;
+    assign UART_WriteStrobe_Mux = UART_ComActive ? UART_WriteStrobe : SelfWriteStrobe;
 
-    assign JTAGWriteData_Mux      = JTAGActive ? JTAGWriteData : UART_WriteData_Mux;
-    assign JTAGWriteStrobe_Mux    = JTAGActive ? JTAGWriteStrobe : UART_WriteStrobe_Mux;
+    assign JTAGWriteData_Mux    = JTAGActive ? JTAGWriteData : UART_WriteData_Mux;
+    assign JTAGWriteStrobe_Mux  = JTAGActive ? JTAGWriteStrobe : UART_WriteStrobe_Mux;
 
-    assign ConfigWriteData        = JTAGWriteData_Mux;
-    assign ConfigWriteStrobe      = JTAGWriteStrobe_Mux;
+    assign ConfigWriteData      = JTAGWriteData_Mux;
+    assign ConfigWriteStrobe    = JTAGWriteStrobe_Mux;
 
-    assign FSM_Reset              = JTAGActive || UART_ComActive || BitBangActive;
-    assign config_clk             = JTAGActive ? tck : CLK;
+    assign FSM_Reset            = JTAGActive || UART_ComActive;
+    assign config_clk           = JTAGActive ? tck : CLK;
 
-    assign ComActive              = UART_ComActive;
-    assign ReceiveLED             = JTAGWriteStrobe ^ UART_LED ^ BitBangWriteStrobe;
-
-    //    wire [FRAME_BITS_PER_ROW-1:0] FrameAddressRegister;
-    //    wire LongFrameStrobe;
-    //    wire [ROW_SELECT_WIDTH-1:0] RowSelect;
+    assign ComActive            = UART_ComActive;
+    assign ReceiveLED           = JTAGWriteStrobe ^ UART_LED;
 
     ConfigFSM #(
         .NUMBER_OF_ROWS    (NUMBER_OF_ROWS),
