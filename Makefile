@@ -8,6 +8,7 @@ ADDITIONAL_SOURCES := $(shell find . -type f \( -iname "*.v" -o -iname "*.sv" \)
 $(info $(ADDITIONAL_SOURCES))
 
 # SYNTH_OPTS += -noabc
+PNR_ARGS += --ignore-loops
 
 include ../openXC7.mk
 
