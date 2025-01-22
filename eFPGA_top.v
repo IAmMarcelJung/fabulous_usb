@@ -1,14 +1,14 @@
 `timescale 1ns / 1ps
 module eFPGA_top #(
-    parameter NumberOfRows     = 4,
-    parameter NumberOfCols     = 5,
-    parameter FrameBitsPerRow  = 32,
-    parameter MaxFramesPerCol  = 20,
-    parameter desync_flag      = 20,
-    parameter FrameSelectWidth = 5,
-    parameter RowSelectWidth   = 5,
-    parameter NumUsedIOs       = 8,
-    parameter NUM_OF_ANODES    = 8
+    parameter NUMBER_OF_ROWS     = 4,
+    parameter NumberOfCols       = 5,
+    parameter FRAME_BITS_PER_ROW = 32,
+    parameter MaxFramesPerCol    = 20,
+    parameter DESYNC_FLAG        = 20,
+    parameter FrameSelectWidth   = 5,
+    parameter ROW_SELECT_WIDTH   = 5,
+    parameter NumUsedIOs         = 8,
+    parameter NUM_OF_ANODES      = 4
 
 ) (
     //External IO port
@@ -30,38 +30,38 @@ module eFPGA_top #(
 );
     //BlockRAM ports
 
-    wire [                                64-1:0] RAM2FAB_D_I;
-    wire [                                64-1:0] FAB2RAM_D_O;
-    wire [                                32-1:0] FAB2RAM_A_O;
+    wire [                                     64-1:0] RAM2FAB_D_I;
+    wire [                                     64-1:0] FAB2RAM_D_O;
+    wire [                                     32-1:0] FAB2RAM_A_O;
     // verilator lint_off UNUSEDSIGNAL
     // Parts of the signal are unused
-    wire [                                16-1:0] FAB2RAM_C_O;
+    wire [                                     16-1:0] FAB2RAM_C_O;
     // verilator lint_off UNUSEDSIGNAL
 
     //Signal declarations
-    wire [    (NumberOfRows*FrameBitsPerRow)-1:0] FrameRegister;
-    wire [    (MaxFramesPerCol*NumberOfCols)-1:0] FrameSelect;
-    wire [(FrameBitsPerRow*(NumberOfRows+2))-1:0] FrameData;
+    wire [    (NUMBER_OF_ROWS*FRAME_BITS_PER_ROW)-1:0] FrameRegister;
+    wire [         (MaxFramesPerCol*NumberOfCols)-1:0] FrameSelect;
+    wire [(FRAME_BITS_PER_ROW*(NUMBER_OF_ROWS+2))-1:0] FrameData;
     // verilator lint_off UNUSEDSIGNAL
     // Parts of the signal are unused
-    wire [                   FrameBitsPerRow-1:0] FrameAddressRegister;
+    wire [                     FRAME_BITS_PER_ROW-1:0] FrameAddressRegister;
     // verilator lint_off UNUSEDSIGNAL
-    wire                                          LongFrameStrobe;
-    wire [                                  31:0] LocalWriteData;
-    wire                                          LocalWriteStrobe;
-    wire [                    RowSelectWidth-1:0] RowSelect;
-    wire                                          resetn;
+    wire                                               LongFrameStrobe;
+    wire [                                       31:0] LocalWriteData;
+    wire                                               LocalWriteStrobe;
+    wire [                       ROW_SELECT_WIDTH-1:0] RowSelect;
+    wire                                               resetn;
 
     //JTAG related signals
-    wire [                        NumUsedIOs-1:0] I_out;
-    wire [                        NumUsedIOs-1:0] O_in;
-    wire [                                  31:0] JTAGWriteData;
-    wire                                          JTAGWriteStrobe;
-    wire                                          JTAGActive;
+    wire [                             NumUsedIOs-1:0] I_out;
+    wire [                             NumUsedIOs-1:0] O_in;
+    wire [                                       31:0] JTAGWriteData;
+    wire                                               JTAGWriteStrobe;
+    wire                                               JTAGActive;
 
-    wire [                        NumUsedIOs-1:0] I_top;
-    wire [                        NumUsedIOs-1:0] O_top;
-    wire [                        NumUsedIOs-1:0] T_top;
+    wire [                             NumUsedIOs-1:0] I_top;
+    wire [                             NumUsedIOs-1:0] O_top;
+    wire [                             NumUsedIOs-1:0] T_top;
 
     assign resetn = !reset;
 
@@ -78,8 +78,8 @@ module eFPGA_top #(
     assign an                    = {NUM_OF_ANODES{1'b1}};
 
     tap #(
-        .bsregInLen (NumUsedIOs),
-        .bsregOutLen(NumUsedIOs)
+        .BS_REG_IN_LEN (NumUsedIOs),
+        .BS_REG_OUT_LEN(NumUsedIOs)
     ) Inst_jtag (
         .tck           (tck),
         .tms           (tms),
@@ -99,10 +99,10 @@ module eFPGA_top #(
     );
 
     eFPGA_Config #(
-        .RowSelectWidth (RowSelectWidth),
-        .NumberOfRows   (NumberOfRows),
-        .desync_flag    (desync_flag),
-        .FrameBitsPerRow(FrameBitsPerRow)
+        .ROW_SELECT_WIDTH  (ROW_SELECT_WIDTH),
+        .NUMBER_OF_ROWS    (NUMBER_OF_ROWS),
+        .DESYNC_FLAG       (DESYNC_FLAG),
+        .FRAME_BITS_PER_ROW(FRAME_BITS_PER_ROW)
     ) eFPGA_Config_inst (
         .CLK                 (CLK),
         .resetn              (resetn),
@@ -128,47 +128,47 @@ module eFPGA_top #(
 
 
     Frame_Data_Reg #(
-        .FrameBitsPerRow(FrameBitsPerRow),
-        .RowSelectWidth (RowSelectWidth),
-        .Row            (1)
+        .FRAME_BITS_PER_ROW(FRAME_BITS_PER_ROW),
+        .ROW_SELECT_WIDTH  (ROW_SELECT_WIDTH),
+        .ROW               (1)
     ) inst_Frame_Data_Reg_0 (
         .FrameData_I(LocalWriteData),
-        .FrameData_O(FrameRegister[0*FrameBitsPerRow+FrameBitsPerRow-1:0*FrameBitsPerRow]),
-        .RowSelect  (RowSelect),
-        .CLK        (CLK)
+        .FrameData_O(FrameRegister[0*FRAME_BITS_PER_ROW+FRAME_BITS_PER_ROW-1:0*FRAME_BITS_PER_ROW]),
+        .RowSelect(RowSelect),
+        .CLK(CLK)
     );
 
     Frame_Data_Reg #(
-        .FrameBitsPerRow(FrameBitsPerRow),
-        .RowSelectWidth (RowSelectWidth),
-        .Row            (2)
+        .FRAME_BITS_PER_ROW(FRAME_BITS_PER_ROW),
+        .ROW_SELECT_WIDTH  (ROW_SELECT_WIDTH),
+        .ROW               (2)
     ) inst_Frame_Data_Reg_1 (
         .FrameData_I(LocalWriteData),
-        .FrameData_O(FrameRegister[1*FrameBitsPerRow+FrameBitsPerRow-1:1*FrameBitsPerRow]),
-        .RowSelect  (RowSelect),
-        .CLK        (CLK)
+        .FrameData_O(FrameRegister[1*FRAME_BITS_PER_ROW+FRAME_BITS_PER_ROW-1:1*FRAME_BITS_PER_ROW]),
+        .RowSelect(RowSelect),
+        .CLK(CLK)
     );
 
     Frame_Data_Reg #(
-        .FrameBitsPerRow(FrameBitsPerRow),
-        .RowSelectWidth (RowSelectWidth),
-        .Row            (3)
+        .FRAME_BITS_PER_ROW(FRAME_BITS_PER_ROW),
+        .ROW_SELECT_WIDTH  (ROW_SELECT_WIDTH),
+        .ROW               (3)
     ) inst_Frame_Data_Reg_2 (
         .FrameData_I(LocalWriteData),
-        .FrameData_O(FrameRegister[2*FrameBitsPerRow+FrameBitsPerRow-1:2*FrameBitsPerRow]),
-        .RowSelect  (RowSelect),
-        .CLK        (CLK)
+        .FrameData_O(FrameRegister[2*FRAME_BITS_PER_ROW+FRAME_BITS_PER_ROW-1:2*FRAME_BITS_PER_ROW]),
+        .RowSelect(RowSelect),
+        .CLK(CLK)
     );
 
     Frame_Data_Reg #(
-        .FrameBitsPerRow(FrameBitsPerRow),
-        .RowSelectWidth (RowSelectWidth),
-        .Row            (4)
+        .FRAME_BITS_PER_ROW(FRAME_BITS_PER_ROW),
+        .ROW_SELECT_WIDTH  (ROW_SELECT_WIDTH),
+        .ROW               (4)
     ) inst_Frame_Data_Reg_3 (
         .FrameData_I(LocalWriteData),
-        .FrameData_O(FrameRegister[3*FrameBitsPerRow+FrameBitsPerRow-1:3*FrameBitsPerRow]),
-        .RowSelect  (RowSelect),
-        .CLK        (CLK)
+        .FrameData_O(FrameRegister[3*FRAME_BITS_PER_ROW+FRAME_BITS_PER_ROW-1:3*FRAME_BITS_PER_ROW]),
+        .RowSelect(RowSelect),
+        .CLK(CLK)
     );
 
     Frame_Select #(
@@ -178,8 +178,9 @@ module eFPGA_top #(
     ) inst_Frame_Select_0 (
         .FrameStrobe_I(FrameAddressRegister[MaxFramesPerCol-1:0]),
         .FrameStrobe_O(FrameSelect[0*MaxFramesPerCol+MaxFramesPerCol-1:0*MaxFramesPerCol]),
-        .FrameSelect  (FrameAddressRegister[FrameBitsPerRow-1:FrameBitsPerRow-FrameSelectWidth]),
-        .FrameStrobe  (LongFrameStrobe)
+        .FrameSelect(
+            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FrameSelectWidth]),
+        .FrameStrobe(LongFrameStrobe)
     );
 
     Frame_Select #(
@@ -189,8 +190,9 @@ module eFPGA_top #(
     ) inst_Frame_Select_1 (
         .FrameStrobe_I(FrameAddressRegister[MaxFramesPerCol-1:0]),
         .FrameStrobe_O(FrameSelect[1*MaxFramesPerCol+MaxFramesPerCol-1:1*MaxFramesPerCol]),
-        .FrameSelect  (FrameAddressRegister[FrameBitsPerRow-1:FrameBitsPerRow-FrameSelectWidth]),
-        .FrameStrobe  (LongFrameStrobe)
+        .FrameSelect(
+            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FrameSelectWidth]),
+        .FrameStrobe(LongFrameStrobe)
     );
 
     Frame_Select #(
@@ -200,8 +202,9 @@ module eFPGA_top #(
     ) inst_Frame_Select_2 (
         .FrameStrobe_I(FrameAddressRegister[MaxFramesPerCol-1:0]),
         .FrameStrobe_O(FrameSelect[2*MaxFramesPerCol+MaxFramesPerCol-1:2*MaxFramesPerCol]),
-        .FrameSelect  (FrameAddressRegister[FrameBitsPerRow-1:FrameBitsPerRow-FrameSelectWidth]),
-        .FrameStrobe  (LongFrameStrobe)
+        .FrameSelect(
+            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FrameSelectWidth]),
+        .FrameStrobe(LongFrameStrobe)
     );
 
     Frame_Select #(
@@ -211,8 +214,9 @@ module eFPGA_top #(
     ) inst_Frame_Select_3 (
         .FrameStrobe_I(FrameAddressRegister[MaxFramesPerCol-1:0]),
         .FrameStrobe_O(FrameSelect[3*MaxFramesPerCol+MaxFramesPerCol-1:3*MaxFramesPerCol]),
-        .FrameSelect  (FrameAddressRegister[FrameBitsPerRow-1:FrameBitsPerRow-FrameSelectWidth]),
-        .FrameStrobe  (LongFrameStrobe)
+        .FrameSelect(
+            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FrameSelectWidth]),
+        .FrameStrobe(LongFrameStrobe)
     );
 
     Frame_Select #(
@@ -222,8 +226,9 @@ module eFPGA_top #(
     ) inst_Frame_Select_4 (
         .FrameStrobe_I(FrameAddressRegister[MaxFramesPerCol-1:0]),
         .FrameStrobe_O(FrameSelect[4*MaxFramesPerCol+MaxFramesPerCol-1:4*MaxFramesPerCol]),
-        .FrameSelect  (FrameAddressRegister[FrameBitsPerRow-1:FrameBitsPerRow-FrameSelectWidth]),
-        .FrameStrobe  (LongFrameStrobe)
+        .FrameSelect(
+            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FrameSelectWidth]),
+        .FrameStrobe(LongFrameStrobe)
     );
 
 

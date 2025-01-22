@@ -138,12 +138,6 @@ module config_UART #(
             Command_Reg  <= 8'b0;
         end else begin
             case (ComState)
-                WaitForStartBit: begin
-                    if (RxLocal == 1'b0) begin
-                        ComState     <= DelayAfterStartBit;
-                        ReceivedWord <= 0;
-                    end
-                end
                 DelayAfterStartBit: begin
                     if (ComTick == 1'b1) begin
                         ComState <= GetBit0;
@@ -202,17 +196,23 @@ module config_UART #(
                         ComState <= WaitForStartBit;
                     end
                 end
+                default: begin  //WaitForStartBit
+                    if (RxLocal == 1'b0) begin
+                        ComState     <= DelayAfterStartBit;
+                        ReceivedWord <= 0;
+                    end
+                end
             endcase
             // scan order:
             // <-to_modules_scan_in <- LSB_W0..MSB_W0 <- LSB_W1.... <- LSB_W7 <- from_modules_scan_out
             // W8(7..1)
             if (ComState == GetStopBit && ComTick == 1'b1) begin
                 case (PresentState)
-                    GetID_00:   ID_Reg[23:16] <= ReceivedWord;
                     GetID_AA:   ID_Reg[15:8] <= ReceivedWord;
                     GetID_FF:   ID_Reg[7:0] <= ReceivedWord;
                     GetCommand: Command_Reg <= ReceivedWord;
                     GetData:    Data_Reg <= ReceivedWord;
+                    default:    ID_Reg[23:16] <= ReceivedWord;  // GetID_00
                 endcase
             end
         end
@@ -223,11 +223,6 @@ module config_UART #(
             PresentState <= Idle;
         end else begin
             case (PresentState)
-                Idle: begin
-                    if (ComState == WaitForStartBit && RxLocal == 1'b0) begin
-                        PresentState <= GetID_00;
-                    end
-                end
                 GetID_00: begin
                     if (TimeToSend == 1'b1) begin
                         PresentState <= Idle;
@@ -273,6 +268,12 @@ module config_UART #(
                 GetData: begin
                     if (TimeToSend == 1'b1) begin
                         PresentState <= Idle;
+                    end
+                end
+                // Idle
+                default: begin
+                    if (ComState == WaitForStartBit && RxLocal == 1'b0) begin
+                        PresentState <= GetID_00;
                     end
                 end
             endcase
@@ -387,12 +388,6 @@ module config_UART #(
                 WriteData    <= 0;
             end else begin
                 case (GetWordState)
-                    Word0: begin
-                        if (ByteWriteStrobe == 1'b1) begin
-                            WriteData[31:24] <= ReceivedByte;
-                            GetWordState     <= Word1;
-                        end
-                    end
                     Word1: begin
                         if (ByteWriteStrobe == 1'b1) begin
                             WriteData[23:16] <= ReceivedByte;
@@ -409,6 +404,13 @@ module config_UART #(
                         if (ByteWriteStrobe == 1'b1) begin
                             WriteData[7:0] <= ReceivedByte;
                             GetWordState   <= Word0;
+                        end
+                    end
+                    // Word0
+                    default: begin
+                        if (ByteWriteStrobe == 1'b1) begin
+                            WriteData[31:24] <= ReceivedByte;
+                            GetWordState     <= Word1;
                         end
                     end
                 endcase
@@ -432,7 +434,7 @@ module config_UART #(
     always @(posedge CLK, negedge resetn) begin : P_TimeOut
         if (!resetn) begin
             TimeToSendCounter <= TimeToSendValue;
-            TimeToSendCounter <= 1'b0;
+            TimeToSend        <= 1'b1;
         end else begin
             if (PresentState == Idle || ComState == GetStopBit) begin
                 //Init TimeOut

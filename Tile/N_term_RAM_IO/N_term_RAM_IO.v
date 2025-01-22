@@ -1,4 +1,4 @@
-`timescale 1ps / 1ps
+`timescale 1ps / 1ps (* blackbox *)
 module N_term_RAM_IO #(
 `ifdef EMULATION
     parameter [639:0] Emulate_Bitstream = 640'b0,

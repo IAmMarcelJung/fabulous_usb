@@ -19,10 +19,10 @@ module eFPGA_Config (
     JTAGWriteStrobe,
     tck
 );
-    parameter NumberOfRows = 16;
-    parameter RowSelectWidth = 5;
-    parameter FrameBitsPerRow = 32;
-    parameter desync_flag = 20;
+    parameter NUMBER_OF_ROWS = 16;
+    parameter ROW_SELECT_WIDTH = 5;
+    parameter FRAME_BITS_PER_ROW = 32;
+    parameter DESYNC_FLAG = 20;
     input CLK;
     input resetn;
     // UART configuration port
@@ -39,9 +39,9 @@ module eFPGA_Config (
     output [32-1:0] ConfigWriteData;
     output ConfigWriteStrobe;
 
-    output [FrameBitsPerRow-1:0] FrameAddressRegister;
+    output [FRAME_BITS_PER_ROW-1:0] FrameAddressRegister;
     output LongFrameStrobe;
-    output [RowSelectWidth-1:0] RowSelect;
+    output [ROW_SELECT_WIDTH-1:0] RowSelect;
 
     // JTAG signals
     input [31:0] JTAGWriteData;
@@ -114,15 +114,15 @@ module eFPGA_Config (
     assign ComActive              = UART_ComActive;
     assign ReceiveLED             = JTAGWriteStrobe ^ UART_LED ^ BitBangWriteStrobe;
 
-    //    wire [FrameBitsPerRow-1:0] FrameAddressRegister;
+    //    wire [FRAME_BITS_PER_ROW-1:0] FrameAddressRegister;
     //    wire LongFrameStrobe;
-    //    wire [RowSelectWidth-1:0] RowSelect;
+    //    wire [ROW_SELECT_WIDTH-1:0] RowSelect;
 
     ConfigFSM #(
-        .NumberOfRows   (NumberOfRows),
-        .RowSelectWidth (RowSelectWidth),
-        .FrameBitsPerRow(FrameBitsPerRow),
-        .desync_flag    (desync_flag)
+        .NUMBER_OF_ROWS    (NUMBER_OF_ROWS),
+        .ROW_SELECT_WIDTH  (ROW_SELECT_WIDTH),
+        .FRAME_BITS_PER_ROW(FRAME_BITS_PER_ROW),
+        .DESYNC_FLAG       (DESYNC_FLAG)
     ) ConfigFSM_inst (
         .CLK                 (config_clk),
         .resetn              (resetn),

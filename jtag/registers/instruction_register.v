@@ -1,5 +1,5 @@
 `timescale 1ps / 1ps
-`include "constants.vh"
+`include "../constants.vh"
 
 module instruction_register #(
     parameter REG_LEN   = 3,
@@ -9,7 +9,7 @@ module instruction_register #(
     upIR,
     shIR,
     tdi,
-    reset,
+    resetn,
     input      [  REG_LEN-1:0] piData,
     input      [          3:0] state,
     output                     tdo_mux,
@@ -53,8 +53,8 @@ module instruction_register #(
         instr_data = `BYPASS_INSTR;
     end
 
-    always @(posedge clkIR or posedge reset) begin
-        if (reset == 1'b0) begin
+    always @(posedge clkIR or negedge resetn) begin
+        if (resetn == 1'b0) begin
             instrB    <= 0;
             instrB[0] <= 1'b1;
         end else if (~upIR)  // clocked instruction bits output

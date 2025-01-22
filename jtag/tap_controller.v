@@ -5,7 +5,7 @@ module tap_controller (
     tms,
     trst,
     output reg [3:0] tstate,
-    output reg       enable,  // enables output via tdo
+    output reg       enable,   // enables output via tdo
     tselect,  // selects data register (0) or instruction register (1)
     captureIR,
     shiftIR,
@@ -13,7 +13,7 @@ module tap_controller (
     shiftDR,
     clkIR,
     clkDR,
-    output           reset,
+    output           resetn_o,
     updateIR,
     updateDR
 );
@@ -134,12 +134,15 @@ module tap_controller (
         end else begin
             state_current <= state_next;
             timeout       <= {timeout[3:0], tms};
-            if (timeout == 5'b11111) state_current <= TLRESET;
-            timeout <= 5'b00000;
+            if (timeout == 5'b11111) begin
+                state_current <= TLRESET;
+                timeout       <= 5'b00000;
+            end
         end
     end
 
-    assign reset = (state_current == TLRESET) ? 1'b0 : trst;
+    // TODO: check if should actually be trst and not 1'b1
+    assign resetn_o = (state_current == TLRESET) ? 1'b0 : trst;
 
     always @(negedge clk) begin
         case (state_current)
@@ -150,6 +153,8 @@ module tap_controller (
             default: {captureIR, shiftIR, captureDR, shiftDR} <= 4'b0000;
         endcase
 
+    end
+    always @(negedge clk) begin
         if (state_current == SHIR | state_current == SHDR) enable <= 1'b1;
         else enable <= 1'b0;
     end
@@ -157,10 +162,14 @@ module tap_controller (
     always @(posedge clk) begin
         if (tstate[3] == 1'b1) tselect <= 1'b1;
         else tselect <= 1'b0;
+    end
 
+    always @(posedge clk) begin
         if (state_current == SHIR | state_current == CAPIR) clkIR <= clk;
         else clkIR <= 1'b1;
+    end
 
+    always @(posedge clk) begin
         if (state_current == SHDR | state_current == CAPDR) clkDR <= clk;
         else clkDR <= 1'b1;
     end
