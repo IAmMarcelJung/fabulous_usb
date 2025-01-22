@@ -83,38 +83,41 @@ module BlockRAM_1KB (
                 mem_wr_mask        = 4'b1000;
                 muxedDataIn[31:24] = wr_data[7:0];
             end
+            // wr_port_configuration == 0
         end else begin
             mem_wr_mask = 4'b1111;
             muxedDataIn = wr_data;
         end
     end
     wire [31:0] mem_dout;
-    //dout0 is unused
-    sram_1rw1r_32_256_8_sky130 memory_cell (
-        .clk0  (clk),
-        .csb0  (memWriteEnable),
-        .web0  (memWriteEnable),
-        .wmask0(mem_wr_mask),
-        .addr0 (wr_addr[7:0]),
-        .din0  (muxedDataIn),
-        // verilator lint_off PINCONNECTEMPTY
-        .dout0 (),
-        // verilator lint_on PINCONNECTEMPTY
-        .clk1  (clk),
-        .csb1  (1'b0),
-        .addr1 (rd_addr[7:0]),
-        .dout1 (mem_dout)
+
+    dpram #(
+        .VECTOR_LENGTH('d256),
+        .WORD_WIDTH   ('d32)
+    ) memory_cell (
+        .wclk_i     (clk),
+        .we_i       (!memWriteEnable),
+        .wclke_i    (!memWriteEnable),
+        .wbytemask_i(mem_wr_mask),
+        .waddr_i    (wr_addr),
+        .wdata_i    (muxedDataIn),
+        .rclk_i     (clk),
+        .rclke_i    (1'b1),
+        .re_i       (1'b1),
+        .raddr_i    (rd_addr),
+        .rdata_o    (mem_dout)
     );
+
     reg [1:0] rd_dout_sel;
     always @(posedge clk) begin
         rd_dout_sel <= wr_data[READ_ADDRESS_MSB_FROM_DATALSB+1:READ_ADDRESS_MSB_FROM_DATALSB];
     end
     reg [31:0] rd_dout_muxed;
     always @(*) begin
-        rd_dout_muxed[31:0] = mem_dout[
-            31:0];  // a default value. Could be 32'dx if tools support it for logic saving!
+        // a default value. Could be 32'dx if tools support it for logic saving!
+        rd_dout_muxed = 32'dx;
         if (rd_port_configuration == 0) begin
-            rd_dout_muxed[31:0] = mem_dout[31:0];
+            rd_dout_muxed = mem_dout;
         end else if (rd_port_configuration == 1) begin
             if (rd_dout_sel[0] == 0) begin
                 rd_dout_muxed[15:0] = mem_dout[15:0];
@@ -147,56 +150,3 @@ module BlockRAM_1KB (
         end
     end
 endmodule
-
-
-// verilator lint_off DECLFILENAME
-// verilator lint_off UNUSEDSIGNAL
-// verilator lint_off UNDRIVEN
-// verilator lint_off UNUSEDPARAM
-(* blackbox *)
-module sram_1rw1r_32_256_8_sky130 (
-    //`ifdef USE_POWER_PINS
-    //  vdd,
-    //  gnd,
-    //`endif
-    // Port 0: RW
-    clk0,
-    csb0,
-    web0,
-    wmask0,
-    addr0,
-    din0,
-    dout0,
-    // Port 1: R
-    clk1,
-    csb1,
-    addr1,
-    dout1
-);
-
-    parameter NUM_WMASKS = 4;
-    parameter DATA_WIDTH = 32;
-    parameter ADDR_WIDTH = 8;
-    parameter RAM_DEPTH = 1 << ADDR_WIDTH;
-    // FIXME: This delay is arbitrary.
-    parameter DELAY = 3;
-    //`ifdef USE_POWER_PINS
-    // inout vdd;
-    // inout gnd;
-    //`endif
-    input clk0;  // clock
-    input csb0;  // active low chip select
-    input web0;  // active low write control
-    input [NUM_WMASKS-1:0] wmask0;  // write mask
-    input [ADDR_WIDTH-1:0] addr0;
-    input [DATA_WIDTH-1:0] din0;
-    output [DATA_WIDTH-1:0] dout0;
-    input clk1;  // clock
-    input csb1;  // active low chip select
-    input [ADDR_WIDTH-1:0] addr1;
-    output [DATA_WIDTH-1:0] dout1;
-endmodule
-// verilator lint_on DECLFILENAME
-// verilator lint_on UNUSEDSIGNAL
-// verilator lint_on UNDRIVEN
-// verilator lint_on UNUSEDPARAM
