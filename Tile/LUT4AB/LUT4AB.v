@@ -1,5 +1,4 @@
 `timescale 1ps / 1ps
-(* blackbox *)
 // verilator lint_off UNOPTFLAT
 module LUT4AB
     #(

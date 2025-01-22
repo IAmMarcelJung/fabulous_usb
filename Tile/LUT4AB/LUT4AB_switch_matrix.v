@@ -1,5 +1,4 @@
 `timescale 1ps / 1ps
-(* blackbox *)
 // NumberOfConfigBits: 462
 module LUT4AB_switch_matrix #(
     parameter NoConfigBits = 462
