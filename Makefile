@@ -7,6 +7,8 @@ CHIPDB  = ${ARTIX7_CHIPDB}
 ADDITIONAL_SOURCES := $(shell find . -type f \( -iname "*.v" -o -iname "*.sv" \) -not -name "eFPGA_top.v")
 $(info $(ADDITIONAL_SOURCES))
 
+# SYNTH_OPTS += -noabc
+
 include ../openXC7.mk
 
 lint:

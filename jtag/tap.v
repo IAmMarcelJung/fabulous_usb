@@ -1,24 +1,24 @@
 `timescale 1ps / 1ps
 `include "constants.vh"
 module tap #(
-    parameter bsregInLen  = 4,
-    parameter bsregOutLen = 4
+    parameter BS_REG_IN_LEN  = 4,
+    parameter BS_REG_OUT_LEN = 4
 ) (
-    input                    tck,
+    input                       tck,
     tms,
     tdi,
-    input                    trst,
-    output                   tdo,
-    input  [ bsregInLen-1:0] pins_in,
-    output [bsregOutLen-1:0] pins_out,
-    input  [bsregOutLen-1:0] logic_pins_out,
-    output [ bsregInLen-1:0] logic_pins_in,
-    output                   active,
+    input                       trst,
+    output                      tdo,
+    input  [ BS_REG_IN_LEN-1:0] pins_in,
+    output [BS_REG_OUT_LEN-1:0] pins_out,
+    input  [BS_REG_OUT_LEN-1:0] logic_pins_out,
+    output [ BS_REG_IN_LEN-1:0] logic_pins_in,
+    output                      active,
     config_strobe,
-    output [           31:0] config_data
+    output [              31:0] config_data
 );
     wire [                    3:0] tstate;
-    wire                           reset;
+    wire                           resetn;
     wire                           tselect;
     wire                           enable;
     wire                           clkIR;
@@ -57,7 +57,7 @@ module tap #(
         .tms      (tms),
         .trst     (trst),
         .tstate   (tstate),
-        .reset    (reset),
+        .resetn_o (resetn),
         .tselect  (tselect),
         .enable   (enable),
         .clkIR    (clkIR),
@@ -81,17 +81,17 @@ module tap #(
         .shIR   (shiftIR),
         .piData (IRdata_pin),
         .tdi    (IRtdi),
-        .reset  (reset),
+        .resetn (resetn),
         .instrB (IRout),
         .tdo_mux(ir_tdo_mux),
         .state  (tstate)
     );
 
     boundary_scan_register #(
-        .LEN(bsregInLen)
+        .LEN(BS_REG_IN_LEN)
     ) bsr_in (
         .tck      (tck),
-        .reset    (reset),
+        .resetn   (resetn),
         .enableIn (bsrInEnableIn),
         .enableOut(bsrInEnableOut),
         .mode     (bsrInMode),
@@ -105,10 +105,10 @@ module tap #(
     );
 
     boundary_scan_register #(
-        .LEN(bsregOutLen)
+        .LEN(BS_REG_OUT_LEN)
     ) bsr_out (
         .tck      (tck),
-        .reset    (reset),
+        .resetn   (resetn),
         .enableIn (bsrOutEnableIn),
         .enableOut(bsrOutEnableOut),
         .mode     (bsrOutMode),
@@ -139,7 +139,7 @@ module tap #(
     assign config_strobe = strobeConfig;
     jtag_config config_I (
         .clk     (clkConfig),
-        .reset   (resetConfig),
+        .resetn  (resetConfig),
         .data_in (dataInConfig),
         .finished(configFinished),
         .data_out(dataOutConfig),

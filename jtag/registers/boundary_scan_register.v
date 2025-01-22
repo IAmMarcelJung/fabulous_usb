@@ -5,7 +5,7 @@ module boundary_scan_register #(
     // verilator lint_off UNUSEDSIGNAL
     input            tck,
     // verilator lint_on UNUSEDSIGNAL
-    input            reset,
+    input            resetn,
     input            enableIn,
     input            enableOut,
     input            mode,
@@ -27,7 +27,7 @@ module boundary_scan_register #(
     generate
         for (i = 0; i < LEN; i = i + 1) begin : gen_bsr_cells
             bsr_cell bsr_cell_i (
-                .reset    (reset),
+                .resetn   (resetn),
                 .enableIn (enableIn),
                 .enableOut(enableOut),
                 .mode     (mode),
