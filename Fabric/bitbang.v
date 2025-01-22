@@ -1,3 +1,4 @@
+`timescale 1ps / 1ps
 module bitbang (s_clk, s_data, strobe, data, active, clk, resetn);
     localparam on_pattern = 16'hFAB1;
     localparam off_pattern = 16'hFAB0;

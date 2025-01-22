@@ -1,161 +1,169 @@
+`timescale 1ps / 1ps
 
 module tap_controller (
-	input 	clk,
-			tms,
-			trst,
-	output reg [3:0] tstate,
-	output reg	enable, // enables output via tdo
-			tselect,	// selects data register (0) or instruction register (1)
-			captureIR,
-			shiftIR,
-			captureDR,
-			shiftDR,
-			clkIR,
-			clkDR,
-	output	reset,
-			updateIR,
-			updateDR	
+    input            clk,
+    tms,
+    trst,
+    output reg [3:0] tstate,
+    output reg       enable,  // enables output via tdo
+    tselect,  // selects data register (0) or instruction register (1)
+    captureIR,
+    shiftIR,
+    captureDR,
+    shiftDR,
+    clkIR,
+    clkDR,
+    output           reset,
+    updateIR,
+    updateDR
 );
-	`include "constants.vh"
 
-	// States
-	localparam tlreset 	= 4'd0;
-	localparam idle 	= 4'd1;
-	localparam seldr 	= 4'd2;
-	localparam capdr 	= 4'd3;
-	localparam shdr 	= 4'd4;
-	localparam ex1dr 	= 4'd5;
-	localparam pdr 		= 4'd6;
-	localparam ex2dr 	= 4'd7;
-	localparam updr 	= 4'd8;
-	localparam selir 	= 4'd9;
-	localparam capir	= 4'd10;
-	localparam shir 	= 4'd11;
-	localparam ex1ir 	= 4'd12;
-	localparam pir 		= 4'd13;
-	localparam ex2ir 	= 4'd14;
-	localparam upir 	= 4'd15;
+    // JTAG States
+    localparam [3:0] TLRESET = 4'h0;
+    localparam [3:0] IDLE = 4'h1;
+    localparam [3:0] SELDR = 4'h2;
+    localparam [3:0] CAPDR = 4'h3;
+    localparam [3:0] SHDR = 4'h4;
+    localparam [3:0] EX1DR = 4'h5;
+    localparam [3:0] PDR = 4'h6;
+    localparam [3:0] EX2DR = 4'h7;
+    localparam [3:0] UPDR = 4'h8;
+    localparam [3:0] SELIR = 4'h9;
+    localparam [3:0] CAPIR = 4'ha;
+    localparam [3:0] SHIR = 4'hb;
+    localparam [3:0] EX1IR = 4'hc;
+    localparam [3:0] PIR = 4'hd;
+    localparam [3:0] EX2IR = 4'he;
+    localparam [3:0] UPIR = 4'hf;
 
-	reg [3:0] state_current; 
-	reg [3:0] state_next;
-	reg [4:0] timeout;
+    localparam [3:0] TLRESET_C = 4'hF;
+    localparam [3:0] IDLE_C = 4'hC;
+    localparam [3:0] SELDR_C = 4'h7;
+    localparam [3:0] CAPDR_C = 4'h6;
+    localparam [3:0] SHDR_C = 4'h2;
+    localparam [3:0] EX1DR_C = 4'h1;
+    localparam [3:0] PDR_C = 4'h3;
+    localparam [3:0] EX2DR_C = 4'h0;
+    localparam [3:0] UPDR_C = 4'h5;
+    localparam [3:0] SELIR_C = 4'h4;
+    localparam [3:0] CAPIR_C = 4'hE;
+    localparam [3:0] SHIR_C = 4'hA;
+    localparam [3:0] EX1IR_C = 4'h9;
+    localparam [3:0] PIR_C = 4'hB;
+    localparam [3:0] EX2IR_C = 4'h8;
+    localparam [3:0] UPIR_C = 4'hD;
 
-	always @(tms, state_current) begin
-		if (tms == 1'b0) begin
-			case (state_current)
-				tlreset : state_next <= idle; 
-				idle 	: state_next <= idle; 
-				seldr 	: state_next <= capdr; 
-				capdr 	: state_next <= shdr; 
-				shdr 	: state_next <= shdr; 
-				ex1dr 	: state_next <= pdr; 
-				pdr 	: state_next <= pdr;
-				ex2dr 	: state_next <= shdr;
-				updr 	: state_next <= idle;
-				selir 	: state_next <= capir; 
-				capir	: state_next <= shir; 
-				shir 	: state_next <= shir; 
-				ex1ir 	: state_next <= pir; 
-				pir 	: state_next <= pir;
-				ex2ir 	: state_next <= shir;
-				upir 	: state_next <= idle;
-				default : state_next <= tlreset;
-			endcase
-		end else if (tms == 1'b1) begin
-			case (state_current)
-				tlreset : state_next <= tlreset; 
-				idle 	: state_next <= seldr; 
-				seldr 	: state_next <= selir; 
-				capdr 	: state_next <= ex1dr; 
-				shdr 	: state_next <= ex1dr; 
-				ex1dr 	: state_next <= updr; 
-				pdr 	: state_next <= ex2dr;
-				ex2dr 	: state_next <= updr;
-				updr 	: state_next <= seldr;
-				selir 	: state_next <= tlreset; 
-				capir	: state_next <= ex1ir; 
-				shir 	: state_next <= ex1ir; 
-				ex1ir 	: state_next <= upir; 
-				pir 	: state_next <= ex2ir;
-				ex2ir 	: state_next <= upir;
-				upir 	: state_next <= seldr;
-				default : state_next <= tlreset;
-			endcase
-		end else 
-			state_next <= state_current;
-	end
+    reg [3:0] state_current;
+    reg [3:0] state_next;
+    reg [4:0] timeout;
 
-	always @(state_current) begin
-		case (state_current)
-			tlreset : tstate <= tlreset_c;
-			idle 	: tstate <= idle_c;
-			seldr 	: tstate <= selectdr_c;
-			capdr 	: tstate <= capturedr_c;
-			shdr 	: tstate <= shiftdr_c;
-			ex1dr 	: tstate <= exit1dr_c;
-			pdr 	: tstate <= pausedr_c;
-			ex2dr 	: tstate <= exit2dr_c;
-			updr 	: tstate <= updatedr_c;
-			selir 	: tstate <= selectir_c;
-			capir	: tstate <= captureir_c;
-			shir 	: tstate <= shiftir_c;
-			ex1ir 	: tstate <= exit1ir_c;
-			pir 	: tstate <= pauseir_c;
-			ex2ir 	: tstate <= exit2ir_c;
-			upir 	: tstate <= updateir_c;
-			default : tstate <= tlreset_c;
-		endcase
-	end
+    always @(*) begin
+        if (tms == 1'b0) begin
+            case (state_current)
+                TLRESET: state_next = IDLE;
+                IDLE:    state_next = IDLE;
+                SELDR:   state_next = CAPDR;
+                CAPDR:   state_next = SHDR;
+                SHDR:    state_next = SHDR;
+                EX1DR:   state_next = PDR;
+                PDR:     state_next = PDR;
+                EX2DR:   state_next = SHDR;
+                UPDR:    state_next = IDLE;
+                SELIR:   state_next = CAPIR;
+                CAPIR:   state_next = SHIR;
+                SHIR:    state_next = SHIR;
+                EX1IR:   state_next = PIR;
+                PIR:     state_next = PIR;
+                EX2IR:   state_next = SHIR;
+                UPIR:    state_next = IDLE;
+                default: state_next = TLRESET;
+            endcase
+        end else if (tms == 1'b1) begin
+            case (state_current)
+                TLRESET: state_next = TLRESET;
+                IDLE:    state_next = SELDR;
+                SELDR:   state_next = SELIR;
+                CAPDR:   state_next = EX1DR;
+                SHDR:    state_next = EX1DR;
+                EX1DR:   state_next = UPDR;
+                PDR:     state_next = EX2DR;
+                EX2DR:   state_next = UPDR;
+                UPDR:    state_next = SELDR;
+                SELIR:   state_next = TLRESET;
+                CAPIR:   state_next = EX1IR;
+                SHIR:    state_next = EX1IR;
+                EX1IR:   state_next = UPIR;
+                PIR:     state_next = EX2IR;
+                EX2IR:   state_next = UPIR;
+                UPIR:    state_next = SELDR;
+                default: state_next = TLRESET;
+            endcase
+        end else state_next = state_current;
+    end
 
-	assign updateIR = (state_current == upir & clk == 1'b0) ? 1'b1 : 1'b0;
-	assign updateDR = (state_current == updr & clk == 1'b0) ? 1'b1 : 1'b0;
+    always @(*) begin
+        case (state_current)
+            TLRESET: tstate = TLRESET_C;
+            IDLE:    tstate = IDLE_C;
+            SELDR:   tstate = SELDR_C;
+            CAPDR:   tstate = CAPDR_C;
+            SHDR:    tstate = SHDR_C;
+            EX1DR:   tstate = EX1DR_C;
+            PDR:     tstate = PDR_C;
+            EX2DR:   tstate = EX2DR_C;
+            UPDR:    tstate = UPDR_C;
+            SELIR:   tstate = SELIR_C;
+            CAPIR:   tstate = CAPIR_C;
+            SHIR:    tstate = SHIR_C;
+            EX1IR:   tstate = EX1IR_C;
+            PIR:     tstate = PIR_C;
+            EX2IR:   tstate = EX2IR_C;
+            UPIR:    tstate = UPIR_C;
+            default: tstate = TLRESET_C;
+        endcase
+    end
 
-	always @(posedge clk, negedge trst) begin
+    assign updateIR = (state_current == UPIR & clk == 1'b0) ? 1'b1 : 1'b0;
+    assign updateDR = (state_current == UPDR & clk == 1'b0) ? 1'b1 : 1'b0;
+
+    always @(posedge clk, negedge trst) begin
         // global reset
         if (trst == 1'b0) begin
-            state_current <= tlreset;
-			timeout <= 5'b00000;
-		end
-		else begin
-			state_current <= state_next;
-			timeout <= {timeout[3:0], tms};
-			if (timeout == 5'b11111)
-				state_current <= tlreset;
-				timeout <= 5'b00000;
-		end
-	end
+            state_current <= TLRESET;
+            timeout       <= 5'b00000;
+        end else begin
+            state_current <= state_next;
+            timeout       <= {timeout[3:0], tms};
+            if (timeout == 5'b11111) state_current <= TLRESET;
+            timeout <= 5'b00000;
+        end
+    end
 
-	assign reset = (state_current == tlreset) ? 1'b0 : trst;
+    assign reset = (state_current == TLRESET) ? 1'b0 : trst;
 
-	always @(negedge clk) begin
-		case (state_current)
-			capir : {captureIR, shiftIR, captureDR, shiftDR} <= 4'b1000;
-			shir : {captureIR, shiftIR, captureDR, shiftDR} <= 4'b0100;
-			capdr : {captureIR, shiftIR, captureDR, shiftDR} <= 4'b0010;
-			shdr : {captureIR, shiftIR, captureDR, shiftDR} <= 4'b0001;
-			default: {captureIR, shiftIR, captureDR, shiftDR} <= 4'b0000;
-		endcase
+    always @(negedge clk) begin
+        case (state_current)
+            CAPIR:   {captureIR, shiftIR, captureDR, shiftDR} <= 4'b1000;
+            SHIR:    {captureIR, shiftIR, captureDR, shiftDR} <= 4'b0100;
+            CAPDR:   {captureIR, shiftIR, captureDR, shiftDR} <= 4'b0010;
+            SHDR:    {captureIR, shiftIR, captureDR, shiftDR} <= 4'b0001;
+            default: {captureIR, shiftIR, captureDR, shiftDR} <= 4'b0000;
+        endcase
 
-		if (state_current == shir | state_current == shdr) 
-			enable <= 1'b1;
-		else
-			enable <= 1'b0;
-	end
+        if (state_current == SHIR | state_current == SHDR) enable <= 1'b1;
+        else enable <= 1'b0;
+    end
 
-	always @(clk) begin
-		if (tstate[3] == 1'b1)
-			tselect <= 1'b1;
-		else 
-			tselect <= 1'b0;
+    always @(posedge clk) begin
+        if (tstate[3] == 1'b1) tselect <= 1'b1;
+        else tselect <= 1'b0;
 
-		if (state_current == shir | state_current == capir)
-			clkIR <= clk;
-		else
-			clkIR <= 1'b1;
+        if (state_current == SHIR | state_current == CAPIR) clkIR <= clk;
+        else clkIR <= 1'b1;
 
-		if (state_current == shdr | state_current == capdr)
-			clkDR <= clk;
-		else
-			clkDR <= 1'b1;
-	end
+        if (state_current == SHDR | state_current == CAPDR) clkDR <= clk;
+        else clkDR <= 1'b1;
+    end
 endmodule
+
+

@@ -7,5 +7,9 @@ CHIPDB  = ${ARTIX7_CHIPDB}
 ADDITIONAL_SOURCES := $(shell find . -type f \( -iname "*.v" -o -iname "*.sv" \) -not -name "eFPGA_top.v")
 $(info $(ADDITIONAL_SOURCES))
 
-
 include ../openXC7.mk
+
+lint:
+	verilator --lint-only -Wall --top-module eFPGA_top *.v -IFabric/ -Ijtag/ -ITile/ -ITile/include/ -ITile/LUT4AB/ -ITile/N_term_RAM_IO/ -ITile/N_term_single/ -ITile/RAM_IO/ -ITile/S_term_RAM_IO/ -ITile/S_term_single/ -ITile/W_IO/ -Ijtag/cells/ -Ijtag/registers/ -f verilator_filelist.f   > lint.log 2>&1
+
+.PHONY: lint

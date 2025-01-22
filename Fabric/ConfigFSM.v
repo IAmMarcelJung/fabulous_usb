@@ -1,3 +1,4 @@
+`timescale 1ps / 1ps
 module ConfigFSM (CLK, resetn, WriteData, WriteStrobe, FSM_Reset, FrameAddressRegister, LongFrameStrobe, RowSelect);
     parameter NumberOfRows = 16;
     parameter RowSelectWidth = 5;

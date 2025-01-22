@@ -1,3 +1,4 @@
+`timescale 1ps / 1ps
 module W_IO
     #(
 `ifdef EMULATION
@@ -55,7 +56,10 @@ wire B_Q;
  //Jump wires
  //internal configuration data signal to daisy-chain all BELs (if any and in the order they are listed in the fabric.csv)
 wire[NoConfigBits-1:0] ConfigBits;
+// verilator lint_off UNUSEDSIGNAL
+// some bits are unused
 wire[NoConfigBits-1:0] ConfigBits_N;
+// verilator lint_on UNUSEDSIGNAL
 
  //Connection for outgoing wires
 wire[FrameBitsPerRow-1:0] FrameData_i;
@@ -751,3 +755,5 @@ W_IO_switch_matrix Inst_W_IO_switch_matrix (
 );
 
 endmodule
+
+

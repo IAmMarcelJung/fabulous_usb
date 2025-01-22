@@ -1,3 +1,4 @@
+`timescale 1ps / 1ps
 module Frame_Data_Reg (FrameData_I, FrameData_O, RowSelect, CLK);
     parameter FrameBitsPerRow = 32;
     parameter RowSelectWidth = 5;

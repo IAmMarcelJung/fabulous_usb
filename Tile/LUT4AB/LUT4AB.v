@@ -1,3 +1,5 @@
+`timescale 1ps / 1ps
+// verilator lint_off UNOPTFLAT
 module LUT4AB
     #(
 `ifdef EMULATION
@@ -178,13 +180,17 @@ wire[1-1:0] J_SR_BEG;
 wire[1-1:0] J_EN_BEG;
  //internal configuration data signal to daisy-chain all BELs (if any and in the order they are listed in the fabric.csv)
 wire[NoConfigBits-1:0] ConfigBits;
+// verilator lint_off UNUSEDSIGNAL
 wire[NoConfigBits-1:0] ConfigBits_N;
+// verilator lint_on UNUSEDSIGNAL
 
  //Connection for outgoing wires
 wire[FrameBitsPerRow-1:0] FrameData_i;
 wire[FrameBitsPerRow-1:0] FrameData_O_i;
 wire[MaxFramesPerCol-1:0] FrameStrobe_i;
 wire[MaxFramesPerCol-1:0] FrameStrobe_O_i;
+// verilator lint_off UNUSEDSIGNAL
+// some bits are unused
 wire[15:0] N4END_i;
 wire[11:0] N4BEG_i;
 wire[15:0] NN4END_i;
@@ -201,6 +207,7 @@ wire[15:0] WW4END_i;
 wire[11:0] WW4BEG_i;
 wire[11:0] W6END_i;
 wire[9:0] W6BEG_i;
+// verilator lint_on UNUSEDSIGNAL
 
 assign FrameData_O_i = FrameData_i;
 
@@ -2297,3 +2304,6 @@ LUT4AB_switch_matrix Inst_LUT4AB_switch_matrix (
 );
 
 endmodule
+
+
+// verilator lint_on UNOPTFLAT
