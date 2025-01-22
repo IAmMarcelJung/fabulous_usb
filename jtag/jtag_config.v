@@ -37,7 +37,6 @@ module jtag_config (
         if (resetn == 1'b0) begin
             strobe       <= 1'b0;
             local_strobe <= 1'b0;
-            time_send    <= TIME_UNTIL_SEND + 1;
         end else if (config_end == 1'b0) begin
             local_strobe <= 1'b0;
             if (active == 1'b1 | time_send == 2) begin
@@ -45,7 +44,13 @@ module jtag_config (
                 local_strobe <= 1'b1;
             end else local_strobe <= 1'b0;
             strobe <= local_strobe;
+        end
+    end
 
+    always @(negedge resetn, posedge clk) begin
+        if (resetn == 1'b0) begin
+            time_send <= TIME_UNTIL_SEND + 1;
+        end else if (config_end == 1'b0) begin
             if (active == 1'b1) time_send <= TIME_UNTIL_SEND;
             else if (time_send > 0) time_send <= time_send - 1;
         end
