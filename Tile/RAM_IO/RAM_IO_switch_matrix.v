@@ -1,5 +1,4 @@
 `timescale 1ps / 1ps
-(* blackbox *)
 module RAM_IO_switch_matrix #(
     parameter NoConfigBits = 280
 ) (

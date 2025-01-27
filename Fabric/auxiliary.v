@@ -9,8 +9,8 @@ module clk_buf (
 endmodule
 
 module break_comb_loop (
-    input  A,
-    output X
+               input  A,
+    (* keep *) output X
 );
     assign X = A;
 endmodule
