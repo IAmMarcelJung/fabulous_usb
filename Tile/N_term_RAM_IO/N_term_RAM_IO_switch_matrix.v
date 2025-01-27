@@ -1,6 +1,5 @@
 `timescale 1ps / 1ps
-module N_term_RAM_IO_switch_matrix #(
-) (
+module N_term_RAM_IO_switch_matrix (
     input  N1END0,
     input  N1END1,
     input  N1END2,
