@@ -5,7 +5,8 @@ module config_UART #(
                          // bin is for faster binary mode, but might not work on all machines/boards
                          // auto uses the MSB in the command byte (the 8th byte in the comload header) to set the mode
                          // "1//- ////" is for hex mode, "0//- ////" for bin mode
-    parameter ComRate = 217  // ComRate = f_CLK / Boud_rate (e.g., 25 MHz/115200 Boud = 217)
+    parameter CLOCK_FREQUENCY = 100_000_000,
+    parameter BAUD_RATE = 115_200
 ) (
     input             CLK,
     input             resetn,
@@ -17,10 +18,18 @@ module config_UART #(
     output reg        ReceiveLED
 );
 
-    //constant TimeToSendValue : integer := 16777216-1; //200000000;
-    localparam TimeToSendValue = 16777 - 1;  //200000000;
-    //localparam CRC_InitValue = 16'b1111111111111111;
-    localparam TestFileChecksum = 20'h4FB00;
+    localparam TIME_TO_SEND_COUNTER_INIT_VALUE = 16777 - 1;  //200000000;
+    localparam TEST_FILE_CHECKSUM = 20'h4FB00;
+
+    // NOTE: The user has to make sure that the relation division does not
+    // result in a value that requires more than 12 bits. This is will
+    // however not happen when using realistic values for the clock frequency
+    // and the baud rate
+
+    // COM_RATE = f_CLK / Borud_rate (e.g., 25 MHz/115200 Boud = 217)
+    // verilator lint_off WIDTHTRUNC
+    localparam [11:0] COM_RATE = CLOCK_FREQUENCY / BAUD_RATE;
+    // verilator lint_on WIDTHTRUNC
 
     function [4:0] ASCII2HEX;
         input [7:0] ASCII;
@@ -54,9 +63,7 @@ module config_UART #(
         end
     endfunction
 
-    //typedef enum{HighNibble, LowNibble} ReceiveStateType; //systemverilog
     localparam HighNibble = 1, LowNibble = 0;
-    //ReceiveStateType ReceiveState;
     reg         ReceiveState;
     reg  [ 3:0] HighReg;
     wire [ 4:0] HexValue;  // a 1'b0 MSB indicates a valid value on [3..0]
@@ -65,8 +72,6 @@ module config_UART #(
 
     reg  [11:0] ComCount;
     reg         ComTick;
-    //typedef enum{WaitForStartBit, DelayAfterStartBit, GetBit0, GetBit1, GetBit2, GetBit3, GetBit4, GetBit5, GetBit6, GetBit7, GetStopBit} ComStateType;
-    //ComStateType ComState;
     localparam WaitForStartBit = 0, DelayAfterStartBit = 1, GetBit0 = 2, GetBit1 = 3, GetBit2 = 4,
         GetBit3 = 5, GetBit4 = 6, GetBit5 = 7, GetBit6 = 8, GetBit7 = 9, GetStopBit = 10;
     reg  [ 3:0] ComState;
@@ -81,36 +86,27 @@ module config_UART #(
 
     wire [ 7:0] ReceivedByte;
 
-    reg         TimeToSend;
+    reg         TimeToSendCounterElapsed;
     reg  [14:0] TimeToSendCounter;
 
-    //typedef enum{Idle, GetID_00, GetID_AA, GetID_FF, GetCommand, EvalCommand, GetData} PresentType;
-    //PresentType PresentState;
     localparam Idle = 0,
         GetID_00 = 1, GetID_AA = 2, GetID_FF = 3, GetCommand = 4, EvalCommand = 5, GetData = 6;
     reg [2:0] PresentState;
 
-    //typedef enum{Word0, Word1, Word2, Word3} GetWordType;
-    //GetWordType GetWordState;
     localparam Word0 = 0, Word1 = 1, Word2 = 2, Word3 = 3;
-    reg [1:0] GetWordState;
+    reg [ 1:0] GetWordState;
 
-    reg       LocalWriteStrobe;
+    reg        LocalWriteStrobe;
 
-    reg       ByteWriteStrobe;
+    reg        ByteWriteStrobe;
 
-    //wire [31:0] Data_Reg32;
-
-    //wire [15:0] Word_Count;
-
-    reg [19:0] CRCReg, b_counter;
-    //wire [7:0] ReceivedWordDebug;
-    reg [22:0] blink;
+    reg [19:0] CRCReg;
+    reg [25:0] blink;
 
     always @(posedge CLK, negedge resetn) begin : P_sync
         if (!resetn) RxLocal <= 1'b1;
         else RxLocal <= Rx;
-    end  // CLK;
+    end
 
     always @(posedge CLK, negedge resetn) begin : P_com_en
         if (!resetn) begin
@@ -118,10 +114,10 @@ module config_UART #(
             ComTick  <= 0;
         end else begin
             if (ComState == WaitForStartBit) begin
-                ComCount <= ComRate / 2;  // @ 25 MHz
+                ComCount <= COM_RATE / 2;  // @ 25 MHz
                 ComTick  <= 1'b0;
             end else if (ComCount == 0) begin
-                ComCount <= ComRate;
+                ComCount <= COM_RATE - 1;
                 ComTick  <= 1'b1;
             end else begin
                 ComCount <= ComCount - 1;
@@ -136,6 +132,7 @@ module config_UART #(
             ReceivedWord <= 8'b0;
             ID_Reg       <= 24'b0;
             Command_Reg  <= 8'b0;
+            Data_Reg     <= 8'b0;
         end else begin
             case (ComState)
                 DelayAfterStartBit: begin
@@ -216,7 +213,7 @@ module config_UART #(
                 endcase
             end
         end
-    end  //CLK
+    end
 
     always @(posedge CLK, negedge resetn) begin : P_FSM
         if (!resetn) begin
@@ -224,34 +221,34 @@ module config_UART #(
         end else begin
             case (PresentState)
                 GetID_00: begin
-                    if (TimeToSend == 1'b1) begin
+                    if (TimeToSendCounterElapsed == 1'b1) begin
                         PresentState <= Idle;
                     end else if (ComState == GetStopBit && ComTick == 1'b1) begin
                         PresentState <= GetID_AA;
                     end
                 end
                 GetID_AA: begin
-                    if (TimeToSend == 1'b1) begin
+                    if (TimeToSendCounterElapsed == 1'b1) begin
                         PresentState <= Idle;
                     end else if (ComState == GetStopBit && ComTick == 1'b1) begin
                         PresentState <= GetID_FF;
                     end
                 end
                 GetID_FF: begin
-                    if (TimeToSend == 1'b1) begin
+                    if (TimeToSendCounterElapsed == 1'b1) begin
                         PresentState <= Idle;
                     end else if (ComState == GetStopBit && ComTick == 1'b1) begin
                         PresentState <= GetCommand;
                     end
                 end
                 //      GetSize1:
-                //        if TimeToSend=1'b1 begin PresentState<=Idle;
+                //        if TimeToSendCounterElapsed=1'b1 begin PresentState<=Idle;
                 //        elsif ComState=GetStopBit && ComTick=1'b1 begin PresentState <= GetSize0; end if;
                 //      GetSize0:
-                //        if TimeToSend=1'b1 begin PresentState<=Idle;
+                //        if TimeToSendCounterElapsed=1'b1 begin PresentState<=Idle;
                 //        elsif ComState=GetStopBit && ComTick=1'b1 begin PresentState <= GetCommand; end if;
                 GetCommand: begin
-                    if (TimeToSend == 1'b1) begin
+                    if (TimeToSendCounterElapsed == 1'b1) begin
                         PresentState <= Idle;
                     end else if (ComState == GetStopBit && ComTick == 1'b1) begin
                         PresentState <= EvalCommand;
@@ -266,7 +263,7 @@ module config_UART #(
                     end
                 end
                 GetData: begin
-                    if (TimeToSend == 1'b1) begin
+                    if (TimeToSendCounterElapsed == 1'b1) begin
                         PresentState <= Idle;
                     end
                 end
@@ -278,7 +275,7 @@ module config_UART #(
                 end
             endcase
         end
-    end  //CLK
+    end
     assign Command = Command_Reg;
 
     if (Mode == 0 || Mode == 1) begin : L_hexmode  // mode [0:auto|1:hex|2:bin]
@@ -312,45 +309,41 @@ module config_UART #(
                     HexWriteStrobe <= 1'b0;
                 end
             end
-        end  // CLK
+        end
     end
 
     always @(posedge CLK, negedge resetn) begin : P_checksum
         if (!resetn) begin
-            CRCReg    <= TestFileChecksum;
-            b_counter <= TestFileChecksum;
-            blink     <= 23'b0;
+            CRCReg     <= TEST_FILE_CHECKSUM;
+            blink      <= 23'b0;
+            ReceiveLED <= 1'b0;
         end else begin
             if (PresentState == GetCommand) begin  // init before data arrives
-                CRCReg    <= 0;
-                b_counter <= 0;
+                CRCReg <= 0;
             end else if (Mode == 1 ||
                          (Mode == 0 && Command_Reg[7] == 1'b1)) begin  // mode [0:auto|1:hex|2:bin]
                 // if hex mode or if auto mode with detected hex mode in the command register
                 if (ComState == GetStopBit && ComTick == 1'b1 && HexValue[4] == 1'b0 &&
                     PresentState == GetData && ReceiveState == LowNibble) begin
-                    CRCReg    <= CRCReg + {HighReg, HexValue[3:0]};
-                    b_counter <= b_counter + 1;
+                    CRCReg <= CRCReg + {HighReg, HexValue[3:0]};
                 end
             end else begin  // binary mode
                 if (ComState == GetStopBit && ComTick == 1'b1 && (PresentState == GetData)) begin
-                    CRCReg    <= CRCReg + ReceivedWord;
-                    b_counter <= b_counter + 1;
+                    CRCReg <= CRCReg + ReceivedWord;
                 end
             end  // checksum computation
 
             if (PresentState == GetData) begin
                 ReceiveLED <= 1'b1;  // receive process in progress
-            end else if ((PresentState == Idle) && (CRCReg != TestFileChecksum)) begin
-                //ReceiveLED <= blink(blink'high);
-                ReceiveLED <= blink[22];
+            end else if ((PresentState == Idle) && (CRCReg != TEST_FILE_CHECKSUM)) begin
+                ReceiveLED <= blink[25];
             end else begin
                 ReceiveLED <= 1'b0;  // receive process was OK
             end
 
             blink <= blink - 1;
         end
-    end  //CLK
+    end
 
     always @(posedge CLK, negedge resetn) begin : P_bus
         if (!resetn) begin
@@ -424,7 +417,6 @@ module config_UART #(
         end
     end  // CLK
 
-    //ComLoaderActive <= 1'b0;
     assign ReceivedByte = (Mode == 2 || (Mode == 0 && Command_Reg[7] == 1'b0)) ? Data_Reg :
         HexData;  // mode [0:auto|1:hex|2:bin]
     // if binary mode or if auto mode with detected binary mode in the command register
@@ -433,22 +425,22 @@ module config_UART #(
 
     always @(posedge CLK, negedge resetn) begin : P_TimeOut
         if (!resetn) begin
-            TimeToSendCounter <= TimeToSendValue;
-            TimeToSend        <= 1'b1;
+            TimeToSendCounter        <= TIME_TO_SEND_COUNTER_INIT_VALUE;
+            TimeToSendCounterElapsed <= 1'b1;
         end else begin
             if (PresentState == Idle || ComState == GetStopBit) begin
                 //Init TimeOut
-                TimeToSendCounter <= TimeToSendValue;
-                TimeToSend        <= 1'b0;
+                TimeToSendCounter        <= TIME_TO_SEND_COUNTER_INIT_VALUE;
+                TimeToSendCounterElapsed <= 1'b0;
             end else if (TimeToSendCounter > 0) begin
-                TimeToSendCounter <= TimeToSendCounter - 1;
-                TimeToSend        <= 1'b0;
+                TimeToSendCounter        <= TimeToSendCounter - 1;
+                TimeToSendCounterElapsed <= 1'b0;
             end else begin
-                TimeToSendCounter <= TimeToSendCounter;
-                TimeToSend        <= 1'b1;  // force FSM to go back to idle when inactive
+                TimeToSendCounter        <= TimeToSendCounter;
+                TimeToSendCounterElapsed <= 1'b1;  // force FSM to go back to idle when inactive
             end
         end
-    end  //CLK
+    end
 
 endmodule
 // verilator lint_on WIDTHEXPAND
