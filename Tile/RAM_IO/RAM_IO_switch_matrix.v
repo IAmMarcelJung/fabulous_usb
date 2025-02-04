@@ -298,7 +298,7 @@ module RAM_IO_switch_matrix #(
     input [NoConfigBits-1:0] ConfigBits,
     input [NoConfigBits-1:0] ConfigBits_N
 );
-  parameter GND0 = 1'b0;
+  localparam GND0 = 1'b0;
 
   wire [4-1:0] N1BEG0_input;
   wire [4-1:0] N1BEG1_input;
