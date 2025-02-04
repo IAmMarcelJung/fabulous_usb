@@ -1,32 +1,37 @@
 `timescale 1ns / 1ps
 module eFPGA_top #(
     parameter NUMBER_OF_ROWS     = 4,
-    parameter NumberOfCols       = 5,
+    parameter NUMBER_OF_COLS     = 5,
     parameter FRAME_BITS_PER_ROW = 32,
-    parameter MaxFramesPerCol    = 20,
+    parameter MAX_FRAMES_PER_COL = 20,
     parameter DESYNC_FLAG        = 20,
-    parameter FrameSelectWidth   = 5,
+    parameter FRAME_SELECT_WIDTH = 5,
     parameter ROW_SELECT_WIDTH   = 5,
-    parameter NumUsedIOs         = 8,
-    parameter NUM_OF_ANODES      = 4
+    parameter CLOCK_FREQUENCY    = 100_000_000,
+    parameter UART_BAUD_RATE     = 115200
 
 ) (
     //External IO port
-    inout [NumUsedIOs-1:0] user_io,
-
+    // verilator lint_off UNDRIVEN
+    output [15:0] A_config_C,
+    output [15:0] B_config_C,
+    output [15:0] Config_accessC,
+    // verilator lint_on UNDRIVEN
+    output [ 7:0] I_top,
+    input  [ 7:0] O_top,
+    output [ 7:0] T_top,
     //Config related ports
-    input  CLK,
-    input  reset,
-    input  Rx,
-    output ReceiveLED,
-
-    // JTAG port
-    input  tms,
-    input  tdi,
-    output tdo,
-    input  tck,
-
-    output [NUM_OF_ANODES-1:0] an  // 7 segment anodes
+    input         CLK,
+    input         resetn,
+    input         SelfWriteStrobe,
+    input  [31:0] SelfWriteData,
+    input         Rx,
+    output        ComActive,
+    output        ReceiveLED,
+    // verilator lint_off UNUSEDSIGNAL
+    input         s_clk,
+    input         s_data
+    // verilator lint_on UNUSEDSIGNAL
 );
     //BlockRAM ports
 
@@ -36,92 +41,46 @@ module eFPGA_top #(
     // verilator lint_off UNUSEDSIGNAL
     // Parts of the signal are unused
     wire [                                     16-1:0] FAB2RAM_C_O;
-    // verilator lint_off UNUSEDSIGNAL
+    // verilator lint_on UNUSEDSIGNAL
 
     //Signal declarations
     wire [    (NUMBER_OF_ROWS*FRAME_BITS_PER_ROW)-1:0] FrameRegister;
-    wire [         (MaxFramesPerCol*NumberOfCols)-1:0] FrameSelect;
+    wire [    (MAX_FRAMES_PER_COL*NUMBER_OF_COLS)-1:0] FrameSelect;
     wire [(FRAME_BITS_PER_ROW*(NUMBER_OF_ROWS+2))-1:0] FrameData;
     // verilator lint_off UNUSEDSIGNAL
     // Parts of the signal are unused
     wire [                     FRAME_BITS_PER_ROW-1:0] FrameAddressRegister;
-    // verilator lint_off UNUSEDSIGNAL
+    // verilator lint_on UNUSEDSIGNAL
     wire                                               LongFrameStrobe;
     wire [                                       31:0] LocalWriteData;
-    wire                                               LocalWriteStrobe;
     wire [                       ROW_SELECT_WIDTH-1:0] RowSelect;
-    wire                                               resetn;
-
-    //JTAG related signals
-    wire [                             NumUsedIOs-1:0] I_out;
-    wire [                             NumUsedIOs-1:0] O_in;
-    wire [                                       31:0] JTAGWriteData;
-    wire                                               JTAGWriteStrobe;
-    wire                                               JTAGActive;
-
-    wire [                             NumUsedIOs-1:0] I_top;
-    wire [                             NumUsedIOs-1:0] O_top;
-    wire [                             NumUsedIOs-1:0] T_top;
-
-    assign resetn = !reset;
-
-    genvar i;
-    generate
-        for (i = 0; i < NumUsedIOs; i = i + 1) begin : g_tristate_outputs
-            assign user_io[i] = T_top[i] ? I_top[i] : 1'bz;
-        end
-    endgenerate
-
-    // turn off 7 segment displancly
-    assign O_top[NumUsedIOs-1:0] = user_io[NumUsedIOs-1:0];
-
-    assign an                    = {NUM_OF_ANODES{1'b1}};
-
-    tap #(
-        .BS_REG_IN_LEN (NumUsedIOs),
-        .BS_REG_OUT_LEN(NumUsedIOs)
-    ) Inst_jtag (
-        .tck           (tck),
-        .tms           (tms),
-        .tdi           (tdi),
-        .tdo           (tdo),
-        .trst          (resetn),
-        // verilator lint_off PINCONNECTEMPTY
-        // TODO: connect the correct signals
-        .pins_in       (),
-        .pins_out      (),
-        .logic_pins_out(),
-        .logic_pins_in (),
-        // verilator lint_on PINCONNECTEMPTY
-        .active        (JTAGActive),
-        .config_data   (JTAGWriteData),
-        .config_strobe (JTAGWriteStrobe)
-    );
 
     eFPGA_Config #(
         .ROW_SELECT_WIDTH  (ROW_SELECT_WIDTH),
         .NUMBER_OF_ROWS    (NUMBER_OF_ROWS),
         .DESYNC_FLAG       (DESYNC_FLAG),
-        .FRAME_BITS_PER_ROW(FRAME_BITS_PER_ROW)
+        .FRAME_BITS_PER_ROW(FRAME_BITS_PER_ROW),
+        .CLOCK_FREQUENCY   (CLOCK_FREQUENCY),
+        .UART_BAUD_RATE    (UART_BAUD_RATE)
     ) eFPGA_Config_inst (
         .CLK                 (CLK),
         .resetn              (resetn),
         .Rx                  (Rx),
         .ReceiveLED          (ReceiveLED),
+        .ComActive           (ComActive),
+        .SelfWriteData       (SelfWriteData),
+        .SelfWriteStrobe     (SelfWriteStrobe),
         // verilator lint_off PINCONNECTEMPTY
-        .ComActive           (),
-        .SelfWriteData       (),
-        .SelfWriteStrobe     (),
         .ConfigWriteStrobe   (),
         // verilator lint_on PINCONNECTEMPTY
         .ConfigWriteData     (LocalWriteData),
         .FrameAddressRegister(FrameAddressRegister),
         .LongFrameStrobe     (LongFrameStrobe),
-        .RowSelect           (RowSelect),
-        .JTAGWriteData       (JTAGWriteData),
-        .JTAGWriteStrobe     (JTAGWriteStrobe),
-        .JTAGActive          (JTAGActive),
-        .tck                 (tck)
+        .RowSelect           (RowSelect)
+        // .JTAGWriteData       (JTAGWriteData),
+        // .JTAGWriteStrobe     (JTAGWriteStrobe),
+        // .JTAGActive          (JTAGActive),
+        // .tck                 (tck)
     );
 
 
@@ -170,62 +129,62 @@ module eFPGA_top #(
     );
 
     Frame_Select #(
-        .MaxFramesPerCol (MaxFramesPerCol),
-        .FrameSelectWidth(FrameSelectWidth),
-        .Col             (0)
+        .MAX_FRAMES_PER_COL(MAX_FRAMES_PER_COL),
+        .FRAME_SELECT_WIDTH(FRAME_SELECT_WIDTH),
+        .COL               (0)
     ) inst_Frame_Select_0 (
-        .FrameStrobe_I(FrameAddressRegister[MaxFramesPerCol-1:0]),
-        .FrameStrobe_O(FrameSelect[0*MaxFramesPerCol+MaxFramesPerCol-1:0*MaxFramesPerCol]),
+        .FrameStrobe_I(FrameAddressRegister[MAX_FRAMES_PER_COL-1:0]),
+        .FrameStrobe_O(FrameSelect[0*MAX_FRAMES_PER_COL+MAX_FRAMES_PER_COL-1:0*MAX_FRAMES_PER_COL]),
         .FrameSelect(
-            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FrameSelectWidth]),
+            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FRAME_SELECT_WIDTH]),
         .FrameStrobe(LongFrameStrobe)
     );
 
     Frame_Select #(
-        .MaxFramesPerCol (MaxFramesPerCol),
-        .FrameSelectWidth(FrameSelectWidth),
-        .Col             (1)
+        .MAX_FRAMES_PER_COL(MAX_FRAMES_PER_COL),
+        .FRAME_SELECT_WIDTH(FRAME_SELECT_WIDTH),
+        .COL               (1)
     ) inst_Frame_Select_1 (
-        .FrameStrobe_I(FrameAddressRegister[MaxFramesPerCol-1:0]),
-        .FrameStrobe_O(FrameSelect[1*MaxFramesPerCol+MaxFramesPerCol-1:1*MaxFramesPerCol]),
+        .FrameStrobe_I(FrameAddressRegister[MAX_FRAMES_PER_COL-1:0]),
+        .FrameStrobe_O(FrameSelect[1*MAX_FRAMES_PER_COL+MAX_FRAMES_PER_COL-1:1*MAX_FRAMES_PER_COL]),
         .FrameSelect(
-            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FrameSelectWidth]),
+            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FRAME_SELECT_WIDTH]),
         .FrameStrobe(LongFrameStrobe)
     );
 
     Frame_Select #(
-        .MaxFramesPerCol (MaxFramesPerCol),
-        .FrameSelectWidth(FrameSelectWidth),
-        .Col             (2)
+        .MAX_FRAMES_PER_COL(MAX_FRAMES_PER_COL),
+        .FRAME_SELECT_WIDTH(FRAME_SELECT_WIDTH),
+        .COL               (2)
     ) inst_Frame_Select_2 (
-        .FrameStrobe_I(FrameAddressRegister[MaxFramesPerCol-1:0]),
-        .FrameStrobe_O(FrameSelect[2*MaxFramesPerCol+MaxFramesPerCol-1:2*MaxFramesPerCol]),
+        .FrameStrobe_I(FrameAddressRegister[MAX_FRAMES_PER_COL-1:0]),
+        .FrameStrobe_O(FrameSelect[2*MAX_FRAMES_PER_COL+MAX_FRAMES_PER_COL-1:2*MAX_FRAMES_PER_COL]),
         .FrameSelect(
-            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FrameSelectWidth]),
+            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FRAME_SELECT_WIDTH]),
         .FrameStrobe(LongFrameStrobe)
     );
 
     Frame_Select #(
-        .MaxFramesPerCol (MaxFramesPerCol),
-        .FrameSelectWidth(FrameSelectWidth),
-        .Col             (3)
+        .MAX_FRAMES_PER_COL(MAX_FRAMES_PER_COL),
+        .FRAME_SELECT_WIDTH(FRAME_SELECT_WIDTH),
+        .COL               (3)
     ) inst_Frame_Select_3 (
-        .FrameStrobe_I(FrameAddressRegister[MaxFramesPerCol-1:0]),
-        .FrameStrobe_O(FrameSelect[3*MaxFramesPerCol+MaxFramesPerCol-1:3*MaxFramesPerCol]),
+        .FrameStrobe_I(FrameAddressRegister[MAX_FRAMES_PER_COL-1:0]),
+        .FrameStrobe_O(FrameSelect[3*MAX_FRAMES_PER_COL+MAX_FRAMES_PER_COL-1:3*MAX_FRAMES_PER_COL]),
         .FrameSelect(
-            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FrameSelectWidth]),
+            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FRAME_SELECT_WIDTH]),
         .FrameStrobe(LongFrameStrobe)
     );
 
     Frame_Select #(
-        .MaxFramesPerCol (MaxFramesPerCol),
-        .FrameSelectWidth(FrameSelectWidth),
-        .Col             (4)
+        .MAX_FRAMES_PER_COL(MAX_FRAMES_PER_COL),
+        .FRAME_SELECT_WIDTH(FRAME_SELECT_WIDTH),
+        .COL               (4)
     ) inst_Frame_Select_4 (
-        .FrameStrobe_I(FrameAddressRegister[MaxFramesPerCol-1:0]),
-        .FrameStrobe_O(FrameSelect[4*MaxFramesPerCol+MaxFramesPerCol-1:4*MaxFramesPerCol]),
+        .FrameStrobe_I(FrameAddressRegister[MAX_FRAMES_PER_COL-1:0]),
+        .FrameStrobe_O(FrameSelect[4*MAX_FRAMES_PER_COL+MAX_FRAMES_PER_COL-1:4*MAX_FRAMES_PER_COL]),
         .FrameSelect(
-            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FrameSelectWidth]),
+            FrameAddressRegister[FRAME_BITS_PER_ROW-1:FRAME_BITS_PER_ROW-FRAME_SELECT_WIDTH]),
         .FrameStrobe(LongFrameStrobe)
     );
 
