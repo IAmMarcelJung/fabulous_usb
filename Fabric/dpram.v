@@ -1,7 +1,8 @@
 `timescale 1ps / 1ps
 module dpram #(
     parameter VECTOR_LENGTH = 512,  // Total memory words
-    parameter WORD_WIDTH    = 8     // Bit width of each word
+    parameter WORD_WIDTH    = 8,    // Bit width of each word
+    parameter ADDR_WIDTH    = 9     // Address length
 ) (
     output reg  [WORD_WIDTH-1:0] rdata_o,     // Read data
     input  wire                  rclk_i,      // Read clock
@@ -16,7 +17,6 @@ module dpram #(
     input  wire [           3:0] wbytemask_i  // Mask
 );
 
-    localparam ADDR_WIDTH = $clog2(VECTOR_LENGTH);  // Address width
     // Memory array
     reg [WORD_WIDTH-1:0] mem[0:VECTOR_LENGTH-1];
 
