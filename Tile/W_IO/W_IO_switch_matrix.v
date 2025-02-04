@@ -113,8 +113,8 @@ module W_IO_switch_matrix #(
     input  [NoConfigBits-1:0] ConfigBits_N
     // verilator lint_on UNUSEDSIGNAL
 );
-    parameter GND0 = 1'b0;
-    parameter VCC0 = 1'b1;
+    localparam GND0 = 1'b0;
+    localparam VCC0 = 1'b1;
 
     wire [ 2-1:0] E1BEG0_input;
     wire [ 2-1:0] E1BEG1_input;

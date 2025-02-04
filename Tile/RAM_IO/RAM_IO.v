@@ -1,7 +1,6 @@
 `timescale 1ps / 1ps
 
 // verilator lint_off UNOPTFLAT
-(* blackbox *)
 module RAM_IO
     #(
 `ifdef EMULATION

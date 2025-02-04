@@ -4,13 +4,13 @@
 ## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
 
 ## Clock signal
-set_property -dict { PACKAGE_PIN W5   IOSTANDARD LVCMOS33 } [get_ports CLK]
+set_property -dict { PACKAGE_PIN W5   IOSTANDARD LVCMOS33 } [get_ports clk]
 
 ## Switches
-#set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS33 } [get_ports {sw[0]}]
-#set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS33 } [get_ports {sw[1]}]
-#set_property -dict { PACKAGE_PIN W16   IOSTANDARD LVCMOS33 } [get_ports {sw[2]}]
-#set_property -dict { PACKAGE_PIN W17   IOSTANDARD LVCMOS33 } [get_ports {sw[3]}]
+set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS33 } [get_ports {user_io[0]}]
+set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS33 } [get_ports {user_io[1]}]
+set_property -dict { PACKAGE_PIN W16   IOSTANDARD LVCMOS33 } [get_ports {user_io[2]}]
+set_property -dict { PACKAGE_PIN W17   IOSTANDARD LVCMOS33 } [get_ports {user_io[3]}]
 #set_property -dict { PACKAGE_PIN W15   IOSTANDARD LVCMOS33 } [get_ports {sw[4]}]
 #set_property -dict { PACKAGE_PIN V15   IOSTANDARD LVCMOS33 } [get_ports {sw[5]}]
 #set_property -dict { PACKAGE_PIN W14   IOSTANDARD LVCMOS33 } [get_ports {sw[6]}]
@@ -28,11 +28,11 @@ set_property -dict { PACKAGE_PIN W5   IOSTANDARD LVCMOS33 } [get_ports CLK]
 ## LEDs
 set_property -dict { PACKAGE_PIN U16   IOSTANDARD LVCMOS33 } [get_ports {ReceiveLED}]
 # set_property -dict { PACKAGE_PIN E19   IOSTANDARD LVCMOS33 } [get_ports {ComActive}]
-# set_property -dict { PACKAGE_PIN U19   IOSTANDARD LVCMOS33 } [get_ports {led[2]}]
-# set_property -dict { PACKAGE_PIN V19   IOSTANDARD LVCMOS33 } [get_ports {led[3]}]
-# set_property -dict { PACKAGE_PIN W18   IOSTANDARD LVCMOS33 } [get_ports {led[4]}]
-# set_property -dict { PACKAGE_PIN U15   IOSTANDARD LVCMOS33 } [get_ports {led[5]}]
-#set_property -dict { PACKAGE_PIN U14   IOSTANDARD LVCMOS33 } [get_ports {led[6]}]
+set_property -dict { PACKAGE_PIN U19   IOSTANDARD LVCMOS33 } [get_ports {user_io[4]}]
+set_property -dict { PACKAGE_PIN V19   IOSTANDARD LVCMOS33 } [get_ports {user_io[5]}]
+set_property -dict { PACKAGE_PIN W18   IOSTANDARD LVCMOS33 } [get_ports {user_io[6]}]
+set_property -dict { PACKAGE_PIN U15   IOSTANDARD LVCMOS33 } [get_ports {user_io[7]}]
+set_property -dict { PACKAGE_PIN U14   IOSTANDARD LVCMOS33 } [get_ports {heartbeat}]
 #set_property -dict { PACKAGE_PIN V14   IOSTANDARD LVCMOS33 } [get_ports {led[7]}]
 #set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS33 } [get_ports {led[8]}]
 #set_property -dict { PACKAGE_PIN V3    IOSTANDARD LVCMOS33 } [get_ports {led[9]}]
@@ -80,24 +80,24 @@ set_property -dict { PACKAGE_PIN U17   IOSTANDARD LVCMOS33 } [get_ports reset]
 #set_property -dict { PACKAGE_PIN G3   IOSTANDARD LVCMOS33 } [get_ports {JA[7]}];#Sch name = JA10
 
 ##Pmod Header JB
-set_property -dict { PACKAGE_PIN A14   IOSTANDARD LVCMOS33 } [get_ports {user_io[0]}] #Sch name = JB1
-set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {user_io[1]}] #Sch name = JB2
-set_property -dict { PACKAGE_PIN B15   IOSTANDARD LVCMOS33 } [get_ports {user_io[2]}] #Sch name = JB3
-set_property -dict { PACKAGE_PIN B16   IOSTANDARD LVCMOS33 } [get_ports {user_io[3]}] #Sch name = JB4
-set_property -dict { PACKAGE_PIN A15   IOSTANDARD LVCMOS33 } [get_ports {user_io[4]}] #Sch name = JB7
-set_property -dict { PACKAGE_PIN A17   IOSTANDARD LVCMOS33 } [get_ports {user_io[5]}] #Sch name = JB8
-set_property -dict { PACKAGE_PIN C15   IOSTANDARD LVCMOS33 } [get_ports {user_io[6]}] #Sch name = JB9
-set_property -dict { PACKAGE_PIN C16   IOSTANDARD LVCMOS33 } [get_ports {user_io[7]}] #Sch name = JB10
+set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {Rx}]
+# set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {user_io[1]}] #Sch name = JB2
+# set_property -dict { PACKAGE_PIN B15   IOSTANDARD LVCMOS33 } [get_ports {user_io[2]}] #Sch name = JB3
+# set_property -dict { PACKAGE_PIN B16   IOSTANDARD LVCMOS33 } [get_ports {user_io[3]}] #Sch name = JB4
+# set_property -dict { PACKAGE_PIN A15   IOSTANDARD LVCMOS33 } [get_ports {user_io[4]}] #Sch name = JB7
+# set_property -dict { PACKAGE_PIN A17   IOSTANDARD LVCMOS33 } [get_ports {user_io[5]}] #Sch name = JB8
+# set_property -dict { PACKAGE_PIN C15   IOSTANDARD LVCMOS33 } [get_ports {user_io[6]}] #Sch name = JB9
+# set_property -dict { PACKAGE_PIN C16   IOSTANDARD LVCMOS33 } [get_ports {user_io[7]}] #Sch name = JB10
 
 ##Pmod Header JC
-set_property -dict { PACKAGE_PIN K17   IOSTANDARD LVCMOS33 } [get_ports {user_io[8]}] #Sch name = JC1
-set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports {user_io[9]}] #Sch name = JC2
+# set_property -dict { PACKAGE_PIN K17   IOSTANDARD LVCMOS33 } [get_ports {user_io[8]}] #Sch name = JC1
+# set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports {user_io[9]}] #Sch name = JC2
 #set_property -dict { PACKAGE_PIN N17   IOSTANDARD LVCMOS33 } [get_ports {dp_io}];#Sch name = JC3
-set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports {Rx}] #Sch name = JC4
-set_property -dict { PACKAGE_PIN L17   IOSTANDARD LVCMOS33 } [get_ports {tms}] #Sch name = JC7
-set_property -dict { PACKAGE_PIN M19   IOSTANDARD LVCMOS33 } [get_ports {tdi}] #Sch name = JC8
-set_property -dict { PACKAGE_PIN P17   IOSTANDARD LVCMOS33 } [get_ports {tdo}] #Sch name = JC9
-set_property -dict { PACKAGE_PIN R18   IOSTANDARD LVCMOS33 } [get_ports {tck}] #Sch name = JC10
+# set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports {Rx}] #Sch name = JC4
+# set_property -dict { PACKAGE_PIN L17   IOSTANDARD LVCMOS33 } [get_ports {tms}] #Sch name = JC7
+# set_property -dict { PACKAGE_PIN M19   IOSTANDARD LVCMOS33 } [get_ports {tdi}] #Sch name = JC8
+# set_property -dict { PACKAGE_PIN P17   IOSTANDARD LVCMOS33 } [get_ports {tdo}] #Sch name = JC9
+# set_property -dict { PACKAGE_PIN R18   IOSTANDARD LVCMOS33 } [get_ports {tck}] #Sch name = JC10
 
 ##Pmod Header JXADC
 #set_property -dict { PACKAGE_PIN J3   IOSTANDARD LVCMOS33 } [get_ports {JXADC[0]}];#Sch name = XA1_P
@@ -158,20 +158,16 @@ set_property -dict { PACKAGE_PIN R18   IOSTANDARD LVCMOS33 } [get_ports {tck}] #
 
 # set_property IS_ENABLED 0 [get_drc_checks {LUTLP-1}]
 # set_property SEVERITY {Warning} [get_drc_checks <>]
-#
+
 ### Timing constraints
-## Clock signal
-set BIT_SAMPLES 4
-set BIT_PERIOD [expr 1000 / 12.0]
-set CLK_PERIOD [expr $BIT_PERIOD / $BIT_SAMPLES]
-set BYTE_PERIOD [expr $BIT_PERIOD * 8]
 
-#create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports clk]
-#create_clock -period 10.000 [get_ports clk_in_1]
+# Input clock
+#create_clock -period 10.00 -waveform {0 5} [get_ports clk]
 
-#create_clock -add -name {clk_usb} -period $CLK_PERIOD [get_nets {clk_48_MHz}]
-set_false_path -to [get_ports {ComActive ReceiveLED an tdo}]
-set_false_path -from [get_ports {reset user_io Rx tms tdi tck}]
 
-# Ignore timing loops for the tiles
-set_disable_timing [get_pins  -hierarchical -regexp {\w*BEG\w*}]
+set_property ALLOW_COMBINATORIAL_LOOPS true [get_nets -hierarchical -filter {NAME =~ *BEG*}]
+#set_disable_timing [get_pins -hierarchical -filter {NAME =~ *BEG*}]
+#set_disable_timing [get_pins -filter {REF_PIN_NAME =~ "*BEG*"} -of_objects [get_cells -hierarchical -quiet -filter {NAME =~ "*switch_matrix*"}]]
+
+set_false_path -to [get_ports {ReceiveLED an heartbeat}]
+set_false_path -from [get_ports {reset user_io Rx}]

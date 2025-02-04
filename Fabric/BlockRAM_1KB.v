@@ -90,10 +90,12 @@ module BlockRAM_1KB (
         end
     end
     wire [31:0] mem_dout;
+    localparam DPRAM_VECTOR_LENGTH = 'd256;
 
     dpram #(
-        .VECTOR_LENGTH('d256),
-        .WORD_WIDTH   ('d32)
+        .VECTOR_LENGTH(DPRAM_VECTOR_LENGTH),
+        .WORD_WIDTH   ('d32),
+        .ADDR_WIDTH   ($clog2(DPRAM_VECTOR_LENGTH))
     ) memory_cell (
         .wclk_i     (clk),
         .we_i       (!memWriteEnable),

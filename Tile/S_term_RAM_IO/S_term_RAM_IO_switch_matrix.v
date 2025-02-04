@@ -1,7 +1,6 @@
 `timescale 1ps / 1ps
 // NumberOfConfigBits: 0
-module S_term_RAM_IO_switch_matrix #(
-) (
+module S_term_RAM_IO_switch_matrix (
     input  S1END0,
     input  S1END1,
     input  S1END2,

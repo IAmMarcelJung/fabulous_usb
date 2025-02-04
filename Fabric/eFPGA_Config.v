@@ -11,16 +11,18 @@ module eFPGA_Config (
     ConfigWriteStrobe,
     FrameAddressRegister,
     LongFrameStrobe,
-    RowSelect,
-    JTAGActive,
-    JTAGWriteData,
-    JTAGWriteStrobe,
-    tck
+    RowSelect
+    // JTAGActive,
+    // JTAGWriteData,
+    // JTAGWriteStrobe,
+    // tck
 );
     parameter NUMBER_OF_ROWS = 16;
     parameter ROW_SELECT_WIDTH = 5;
     parameter FRAME_BITS_PER_ROW = 32;
     parameter DESYNC_FLAG = 20;
+    parameter UART_BAUD_RATE = 115_200;
+    parameter CLOCK_FREQUENCY = 100_000_000;
     input CLK;
     input resetn;
     // UART configuration port
@@ -39,10 +41,10 @@ module eFPGA_Config (
     output [ROW_SELECT_WIDTH-1:0] RowSelect;
 
     // JTAG signals
-    input [31:0] JTAGWriteData;
-    input JTAGWriteStrobe;
-    input JTAGActive;
-    input tck;
+    // input [31:0] JTAGWriteData;
+    // input JTAGWriteStrobe;
+    // input JTAGActive;
+    // input tck;
 
 
     // verilator lint_off UNUSEDSIGNAL
@@ -56,13 +58,17 @@ module eFPGA_Config (
     wire        UART_LED;
 
 
-    wire [31:0] JTAGWriteData_Mux;
-    wire        JTAGWriteStrobe_Mux;
+    // wire [31:0] JTAGWriteData_Mux;
+    // wire        JTAGWriteStrobe_Mux;
 
     wire        FSM_Reset;
     wire        config_clk;
 
-    config_UART INST_config_UART (
+    config_UART #(
+        .BAUD_RATE      (UART_BAUD_RATE),
+        .CLOCK_FREQUENCY(CLOCK_FREQUENCY)
+
+    ) INST_config_UART (
         .CLK        (CLK),
         .resetn     (resetn),
         .Rx         (Rx),
@@ -78,17 +84,21 @@ module eFPGA_Config (
     assign UART_WriteData_Mux   = UART_ComActive ? UART_WriteData : SelfWriteData;
     assign UART_WriteStrobe_Mux = UART_ComActive ? UART_WriteStrobe : SelfWriteStrobe;
 
-    assign JTAGWriteData_Mux    = JTAGActive ? JTAGWriteData : UART_WriteData_Mux;
-    assign JTAGWriteStrobe_Mux  = JTAGActive ? JTAGWriteStrobe : UART_WriteStrobe_Mux;
+    // assign JTAGWriteData_Mux    = JTAGActive ? JTAGWriteData : UART_WriteData_Mux;
+    // assign JTAGWriteStrobe_Mux  = JTAGActive ? JTAGWriteStrobe : UART_WriteStrobe_Mux;
 
-    assign ConfigWriteData      = JTAGWriteData_Mux;
-    assign ConfigWriteStrobe    = JTAGWriteStrobe_Mux;
+    // assign ConfigWriteData      = JTAGWriteData_Mux;
+    // assign ConfigWriteStrobe    = JTAGWriteStrobe_Mux;
+    assign ConfigWriteData      = UART_WriteData_Mux;
+    assign ConfigWriteStrobe    = UART_WriteStrobe_Mux;
 
-    assign FSM_Reset            = JTAGActive || UART_ComActive;
-    assign config_clk           = JTAGActive ? tck : CLK;
+    assign FSM_Reset            = UART_ComActive;
+    // assign config_clk           = JTAGActive ? tck : CLK;
+    assign config_clk           = CLK;
 
     assign ComActive            = UART_ComActive;
-    assign ReceiveLED           = JTAGWriteStrobe ^ UART_LED;
+    // assign ReceiveLED           = JTAGWriteStrobe ^ UART_LED;
+    assign ReceiveLED           = UART_LED;
 
     ConfigFSM #(
         .NUMBER_OF_ROWS    (NUMBER_OF_ROWS),
@@ -98,8 +108,8 @@ module eFPGA_Config (
     ) ConfigFSM_inst (
         .CLK                 (config_clk),
         .resetn              (resetn),
-        .WriteData           (JTAGWriteData_Mux),
-        .WriteStrobe         (JTAGWriteStrobe_Mux),
+        .WriteData           (ConfigWriteData),
+        .WriteStrobe         (ConfigWriteStrobe),
         .FSM_Reset           (FSM_Reset),
         //outputs
         .FrameAddressRegister(FrameAddressRegister),

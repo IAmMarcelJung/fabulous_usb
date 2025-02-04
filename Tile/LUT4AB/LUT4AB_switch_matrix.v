@@ -1,5 +1,4 @@
 `timescale 1ps / 1ps
-(* blackbox *)
 // NumberOfConfigBits: 462
 module LUT4AB_switch_matrix #(
     parameter NoConfigBits = 462
@@ -513,8 +512,8 @@ module LUT4AB_switch_matrix #(
     input [NoConfigBits-1:0] ConfigBits_N
     // verilator lint_on UNUSEDSIGNAL
 );
-  parameter GND0 = 1'b0;
-  parameter VCC0 = 1'b1;
+  localparam GND0 = 1'b0;
+  localparam VCC0 = 1'b1;
 
   wire [ 4-1:0] N1BEG0_input;
   wire [ 4-1:0] N1BEG1_input;
