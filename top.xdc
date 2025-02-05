@@ -41,7 +41,7 @@ set_property -dict { PACKAGE_PIN U14   IOSTANDARD LVCMOS33 } [get_ports {heartbe
 #set_property -dict { PACKAGE_PIN P3    IOSTANDARD LVCMOS33 } [get_ports {led[12]}]
 #set_property -dict { PACKAGE_PIN N3    IOSTANDARD LVCMOS33 } [get_ports {led[13]}]
 #set_property -dict { PACKAGE_PIN P1    IOSTANDARD LVCMOS33 } [get_ports {led[14]}]
-#set_property -dict { PACKAGE_PIN L1    IOSTANDARD LVCMOS33 } [get_ports {led[15]}]
+set_property -dict { PACKAGE_PIN L1    IOSTANDARD LVCMOS33 } [get_ports {led_o}]
 
 
 ##7 Segment Display
@@ -70,6 +70,10 @@ set_property -dict { PACKAGE_PIN U17   IOSTANDARD LVCMOS33 } [get_ports reset]
 
 
 ##Pmod Header JA
+set_property -dict { PACKAGE_PIN G2   IOSTANDARD LVCMOS33 } [get_ports {pico_o}]
+set_property -dict { PACKAGE_PIN L2   IOSTANDARD LVCMOS33 } [get_ports {poci_i}]
+set_property -dict { PACKAGE_PIN J1   IOSTANDARD LVCMOS33 } [get_ports {cs_o}]
+set_property -dict { PACKAGE_PIN J2   IOSTANDARD LVCMOS33 } [get_ports {sck_o}]
 # set_property -dict { PACKAGE_PIN J1   IOSTANDARD LVCMOS33 } [get_ports {Rx}]
 # set_property -dict { PACKAGE_PIN L2   IOSTANDARD LVCMOS33 } [get_ports {tms}]
 # set_property -dict { PACKAGE_PIN J2   IOSTANDARD LVCMOS33 } [get_ports {tdi}]
@@ -91,9 +95,9 @@ set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {Rx}]
 
 ##Pmod Header JC
 # set_property -dict { PACKAGE_PIN K17   IOSTANDARD LVCMOS33 } [get_ports {user_io[8]}] #Sch name = JC1
-# set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports {user_io[9]}] #Sch name = JC2
-#set_property -dict { PACKAGE_PIN N17   IOSTANDARD LVCMOS33 } [get_ports {dp_io}];#Sch name = JC3
-# set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports {Rx}] #Sch name = JC4
+set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports {dp_pu_o}]
+set_property -dict { PACKAGE_PIN N17   IOSTANDARD LVCMOS33 } [get_ports {dn_io}]
+set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports {dp_io}]
 # set_property -dict { PACKAGE_PIN L17   IOSTANDARD LVCMOS33 } [get_ports {tms}] #Sch name = JC7
 # set_property -dict { PACKAGE_PIN M19   IOSTANDARD LVCMOS33 } [get_ports {tdi}] #Sch name = JC8
 # set_property -dict { PACKAGE_PIN P17   IOSTANDARD LVCMOS33 } [get_ports {tdo}] #Sch name = JC9
