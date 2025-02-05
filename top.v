@@ -7,22 +7,23 @@ module top #(
     parameter DESYNC_FLAG        = 20,
     parameter FRAME_SELECT_WIDTH = 5,
     parameter ROW_SELECT_WIDTH   = 5,
-    parameter NUM_USED_IOS       = 8,
-    parameter NUM_USED_LEDS      = 4,
-    parameter NUM_USED_SWITCHES  = 4,
-    parameter NUM_OF_ANODES      = 4,
     parameter UART_BAUD_RATE     = 115_200,
     parameter CLOCK_FREQUENCY    = 12_500_000
 
 ) (
-    //External IO port
-    inout [NUM_USED_IOS-1:0] user_io,
 
     //Config related ports
-    input  clk,
-    input  reset,
+    input  clk_system_i,
+    input  clk_usb_i,
+    input  reset_n_i,
     input  Rx,
     output ReceiveLED,
+
+    // Fabric IOs
+    output [(NUMBER_OF_ROWS * 2)-1:0] I_top,
+    input  [(NUMBER_OF_ROWS * 2)-1:0] O_top,
+    output [(NUMBER_OF_ROWS * 2)-1:0] T_top,
+
 
     // JTAG port
     // input  tms,
@@ -30,12 +31,24 @@ module top #(
     // output tdo,
     // input  tck,
 
-    output                     heartbeat,
-    output [NUM_OF_ANODES-1:0] an          // 7 segment anodes
+    inout  dp_io,        // USB+
+    inout  dn_io,        // USB-
+    output dp_pu_o,      // USB 1.5kOhm Pullup EN
+    output usb_check_o,
+    output sck_o,
+    output cs_o,
+    input  poci_i,
+    output pico_o
 );
 
-    localparam LED_FIRST_IO = NUM_USED_SWITCHES;
-    localparam LED_LAST_IO = LED_FIRST_IO + NUM_USED_LEDS - 1;
+
+    // DFU related parameters
+    localparam CHANNELS = 'd1;
+    localparam BIT_SAMPLES = 'd4;
+    localparam TRANSFER_SIZE = 'd256;
+    localparam POLLTIMEOUT = 'd10;  // ms
+    localparam MS20 = 1;
+    localparam WCID = 1;
     //BlockRAM ports
 
     wire [                                     64-1:0] RAM2FAB_D_I;
@@ -58,7 +71,6 @@ module top #(
     wire [                                       31:0] LocalWriteData;
     wire                                               LocalWriteStrobe;
     wire [                       ROW_SELECT_WIDTH-1:0] RowSelect;
-    wire                                               resetn;
 
     //JTAG related signals
     // wire [                           NUM_USED_IOS-1:0] I_out;
@@ -67,28 +79,12 @@ module top #(
     // wire                                               JTAGWriteStrobe;
     // wire                                               JTAGActive;
 
-    wire [                           NUM_USED_IOS-1:0] I_top;
-    wire [                           NUM_USED_IOS-1:0] O_top;
-    wire [                           NUM_USED_IOS-1:0] T_top;
-    wire                                               clk_efpga;
+    wire                                               boot;
+    wire [                                       31:0] efpga_write_data;
+    wire                                               efpga_write_strobe;
+    wire                                               efpga_reset_n;
 
-    assign resetn = !reset;
-
-    // verilator lint_off GENUNNAMED
-    genvar i;
-    generate
-        for (i = 0; i < NUM_USED_IOS; i = i + 1) begin : gen_tristate_outputs
-            if (i >= LED_FIRST_IO) assign user_io[i] = T_top[i] ? I_top[i] : 1'bz;
-            else assign user_io[i] = 1'bz;
-        end
-    endgenerate
-    // verilator lint_on GENUNNAMED
-
-    assign O_top[NUM_USED_SWITCHES-1:0]    = user_io[NUM_USED_SWITCHES-1:0];
-    assign O_top[LED_LAST_IO:LED_FIRST_IO] = user_io[LED_LAST_IO:LED_FIRST_IO];
-
-    // turn off 7 segment display
-    assign an                              = {NUM_OF_ANODES{1'b1}};
+    assign efpga_reset_n = reset_n_i & !boot;
 
     // tap #(
     //     .BS_REG_IN_LEN (NUM_USED_IOS),
@@ -98,7 +94,7 @@ module top #(
     //     .tms           (tms),
     //     .tdi           (tdi),
     //     .tdo           (tdo),
-    //     .trst          (resetn),
+    //     .trst          (reset_n),
     //     // verilator lint_off PINCONNECTEMPTY
     //     // TODO: connect the correct signals
     //     .pins_in       (),
@@ -111,19 +107,8 @@ module top #(
     //     .config_strobe (JTAGWriteStrobe)
     // );
     //
-    reg [29:0] ctr;
 
-    pll_12_5_MHz pll_12_5_MHz_inst (
-        .clk_in1     (clk),        // 100 MHz input clock
-        .reset       (reset),      // Reset signal to the clocking wizard
-        .clk_12_5_MHz(clk_efpga),  // 12 MHz output clock
-        // verilator lint_off PINCONNECTEMPTY
-        .locked      ()            // Locked output signal
-        // verilator lint_on PINCONNECTEMPTY
-    );
 
-    always @(posedge clk_efpga) ctr <= ctr + 1'b1;
-    assign heartbeat = ctr[25];
 
     eFPGA_top #(
         .NUMBER_OF_ROWS    (NUMBER_OF_ROWS),
@@ -144,20 +129,40 @@ module top #(
         .I_top         (I_top),
         .O_top         (O_top),
         .T_top         (T_top),
-        .CLK           (clk_efpga),
-        .resetn        (resetn),
+        .CLK           (clk_system_i),
+        .resetn        (efpga_reset_n),
         // verilator lint_on PINCONNECTEMPTY
 
         //Config related ports
+        .SelfWriteStrobe(efpga_write_strobe),
+        .SelfWriteData  (efpga_write_data),
         // verilator lint_off PINCONNECTEMPTY
-        .SelfWriteStrobe(),
-        .SelfWriteData  (),
         .s_clk          (),
         .s_data         (),
         .ComActive      (),
         // verilator lint_on PINCONNECTEMPTY
         .Rx             (Rx),
         .ReceiveLED     (ReceiveLED)
+    );
+
+    controller #(
+        .USE_SYSTEM_CLK      (0),
+        .SYSTEM_CLK_FREQUENCY(12_500_000)
+    ) controller_inst (
+        .clk_system_i        (clk_system_i),
+        .reset_n_i           (reset_n_i),
+        .boot_o              (boot),
+        .clk_usb_i           (clk_usb_i),
+        .dp_io               (dp_io),
+        .dn_io               (dn_io),
+        .dp_pu_o             (dp_pu_o),
+        .usb_check_o         (usb_check_o),
+        .sck_o               (sck_o),
+        .cs_o                (cs_o),
+        .poci_i              (poci_i),
+        .pico_o              (pico_o),
+        .efpga_write_data_o  (efpga_write_data),
+        .efpga_write_strobe_o(efpga_write_strobe)
     );
 
 
