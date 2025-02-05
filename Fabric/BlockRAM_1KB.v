@@ -92,7 +92,7 @@ module BlockRAM_1KB (
     wire [31:0] mem_dout;
     localparam DPRAM_VECTOR_LENGTH = 'd256;
 
-    dpram #(
+    dpram_fabric #(
         .VECTOR_LENGTH(DPRAM_VECTOR_LENGTH),
         .WORD_WIDTH   ('d32),
         .ADDR_WIDTH   ($clog2(DPRAM_VECTOR_LENGTH))
