@@ -58,8 +58,7 @@ module top_basys3 #(
     genvar i;
     generate
         for (i = 0; i < NUM_USED_IOS; i = i + 1) begin : gen_tristate_outputs
-            if (i >= LED_FIRST_IO) assign user_io[i] = T_top[i] ? I_top[i] : 1'bz;
-            else assign user_io[i] = 1'bz;
+            assign user_io[i] = T_top[i] ? I_top[i] : 1'bz;
         end
     endgenerate
     // verilator lint_on GENUNNAMED
