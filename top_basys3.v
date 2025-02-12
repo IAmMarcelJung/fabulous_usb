@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ps / 1ps
 module top_basys3 #(
     parameter NUM_OF_ANODES     = 4,
     parameter NUM_USED_IOS      = 8,
