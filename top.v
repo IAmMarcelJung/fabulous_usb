@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ps / 1ps
 module top #(
     parameter NUMBER_OF_ROWS     = 4,
     parameter NUMBER_OF_COLS     = 5,
