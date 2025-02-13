@@ -7,16 +7,16 @@ module config_usb_tb;
 
     // Testbench Signals (inputs to DUT are regs, outputs are wires)
     reg            clk_system;
-    reg            reset_n;
+    wire           reset_n;
     reg            dfu_mode;
     reg     [ 2:0] dfu_alt;
     reg            dfu_out_en;
     reg            dfu_in_en;
     wire    [ 7:0] dfu_in_data;
     wire           dfu_in_valid;
-    reg            dfu_in_ready;
-    reg     [ 7:0] dfu_out_data;
-    reg            dfu_out_valid;
+    wire           dfu_in_ready;
+    wire    [ 7:0] dfu_out_data;
+    wire           dfu_out_valid;
     wire           dfu_out_ready;
     reg            dfu_clear_status;
     wire           dfu_busy;
@@ -31,7 +31,8 @@ module config_usb_tb;
     integer        current_byte_pos;
 
     localparam MAX_BITBYTES = 16384;
-    localparam PREAMBLE_SIZE = 16;
+    // localparam PREAMBLE_SIZE = 16;
+
     // Instantiate the DUT
     config_usb #(
         .BUFFER_SIZE(BUFFER_SIZE)
@@ -56,97 +57,101 @@ module config_usb_tb;
         .write_data_o       (write_data)
     );
 
+    // Instantiate the module containing utility used in the testbench
+    tb_utils #(
+        .MAX_BITBYTES(MAX_BITBYTES)
+    ) tb_utils_inst (
+        .clk_i              (clk_system),
+        .reset_n_o          (reset_n),
+        .out_data_o         (dfu_out_data),
+        .out_valid_o        (dfu_out_valid),
+        .out_ready          (dfu_out_ready),
+        .write_data_i       (write_data),
+        .word_write_strobe_i(word_write_strobe)
+    );
+
     // Clock Generation: 100 MHz clock (10 ns period)
     initial begin
         clk_system = 1'b0;
         forever #5000 clk_system = ~clk_system;
     end
 
-    // Heartbeat Generator: toggles every 50 ns (adjust as needed)
+    // Heartbeat Generator (toggles every 50 ns)
     initial begin
         heartbeat = 1'b0;
         forever #50000 heartbeat = ~heartbeat;
     end
-    integer i;
-    integer timeout_counter;
+
+    initial begin
+        tb_utils_inst.monitor_write_data();
+    end
+
+    // integer i;
+    // integer timeout_counter;
 
     // Reset and stimulus initialization
     initial begin
         $dumpfile("./build/config_usb_tb.fst");
         $dumpvars(0, config_usb_tb);
-        $readmemh("./build/counter.hex", bitstream);
-        // Initialize all inputs to safe values
-        reset_n          = 1'b0;
-        dfu_mode         = 1'b0;
-        dfu_alt          = 3'b000;
-        dfu_out_en       = 1'b0;
-        dfu_in_en        = 1'b0;
-        dfu_in_ready     = 1'b0;
-        dfu_out_data     = 8'd0;
-        dfu_out_valid    = 1'b0;
-        dfu_clear_status = 1'b0;
 
-        // Apply reset for 20 ns
-        #20000;
-        reset_n = 1'b1;
-        #20000;  // Wait a couple of clock cycles after reset
+        // $readmemh("./build/counter.hex", bitstream);
+        tb_utils_inst.dump_arrays();
+        tb_utils_inst.load_bitstream("./build/counter.hex");
 
-        dfu_mode   = 1'b1;
-        dfu_alt    = 3'b010;
-        dfu_out_en = 1'b1;
-        dfu_in_en  = 1'b1;
+        reset_dfu_signals();
+        repeat (5) @(posedge clk_system);
+        set_dfu_signals();
 
+        tb_utils_inst.simulate_usb_bitstream_output(0);
 
         // Load bitstream
-        for (i = 0; i < MAX_BITBYTES; i = i + 1) begin
-            @(posedge clk_system);
-            dfu_out_data    = bitstream[i];
-            dfu_out_valid   = 1'b1;
+        // for (i = 0; i < MAX_BITBYTES; i = i + 1) begin
+        //     @(posedge clk_system);
+        //     dfu_out_data    = bitstream[i];
+        //     dfu_out_valid   = 1'b1;
+        //
+        //     // Implement timeout using a loop
+        //     timeout_counter = 100;  // Set timeout limit
+        //     while (dfu_out_ready !== 1'b1 && timeout_counter > 0) begin
+        //         #10000;  // Wait for 10 clock cylces per iteration
+        //         timeout_counter = timeout_counter - 1;
+        //         $display("%0d", timeout_counter);
+        //     end
+        //
+        //     // Check if timeout occurred
+        //     if (timeout_counter <= 0) begin
+        //         $display("FAIL: Timeout waiting for dfu_out_ready_o at iteration %0d!", i);
+        //         $finish;  // Halt simulation
+        //     end
+        //
+        //     if (i >= PREAMBLE_SIZE) begin
+        //         current_byte_pos = (i - PREAMBLE_SIZE) % 4;
+        //
+        //         if (current_byte_pos == 0) write_data_gold = write_data_gold_next;
+        //         write_data_gold_array[current_byte_pos] = bitstream[i];
+        //
+        //         // Ignore the first value
+        //         if (i > PREAMBLE_SIZE + 4 && word_write_strobe) begin
+        //             $display("write_data: %0x, write_data_gold: %0x", write_data, write_data_gold);
+        //             if (write_data !== write_data_gold) begin
+        //                 $display("FAIL: Mismatch at iteration %0d!", i);
+        //                 $finish;  // Halt simulation
+        //             end
+        //         end
+        //     end
+        //     // @(posedge clk_system);
+        //     // dfu_out_valid = 1'b0;
+        //
+        // end
 
-            // Implement timeout using a loop
-            timeout_counter = 100;  // Set timeout limit
-            while (dfu_out_ready !== 1'b1 && timeout_counter > 0) begin
-                #10000;  // Wait for 10 clock cylces per iteration
-                timeout_counter = timeout_counter - 1;
-                $display("%0d", timeout_counter);
-            end
-
-            // Check if timeout occurred
-            if (timeout_counter <= 0) begin
-                $display("FAIL: Timeout waiting for dfu_out_ready_o at iteration %0d!", i);
-                $finish;  // Halt simulation
-            end
-
-            if (i >= PREAMBLE_SIZE) begin
-                current_byte_pos = (i - PREAMBLE_SIZE) % 4;
-
-                if (current_byte_pos == 0) write_data_gold = write_data_gold_next;
-                write_data_gold_array[current_byte_pos] = bitstream[i];
-
-                // Ignore the first value
-                if (i > PREAMBLE_SIZE + 4 && word_write_strobe) begin
-                    $display("write_data: %0x, write_data_gold: %0x", write_data, write_data_gold);
-                    if (write_data !== write_data_gold) begin
-                        $display("FAIL: Mismatch at iteration %0d!", i);
-                        $finish;  // Halt simulation
-                    end
-                end
-            end
-            // @(posedge clk_system);
-            // dfu_out_valid = 1'b0;
-
-        end
-
-        // Optionally de-assert DFU mode signals after the transfers
+        // De-assert DFU mode signals after the transfers
         @(posedge clk_system);
-        dfu_mode   = 1'b0;
-        dfu_out_en = 1'b0;
-        dfu_in_en  = 1'b0;
+        reset_dfu_signals();
 
 
         // Finish simulation after a while
         #10000;
-        $display("SUCCESS: Simulation finished!", i);
+        $display("SUCCESS: Simulation finished!");
         $finish;
     end
 
@@ -156,6 +161,26 @@ module config_usb_tb;
         write_data_gold_array[2],
         write_data_gold_array[3]
     };
+
+    task reset_dfu_signals;
+        begin
+            dfu_mode         = 1'b0;
+            dfu_alt          = 3'b000;
+            dfu_out_en       = 1'b0;
+            dfu_in_en        = 1'b0;
+            dfu_clear_status = 1'b0;
+        end
+    endtask
+
+    task set_dfu_signals;
+        begin
+            // Set correct dfu settings
+            dfu_mode   = 1'b1;
+            dfu_alt    = 3'b010;
+            dfu_out_en = 1'b1;
+            dfu_in_en  = 1'b1;
+        end
+    endtask
 
 
 endmodule
