@@ -15,7 +15,11 @@ MAX_BITBYTES=16384
 TB_DIR := ./tb
 TB_BUILD_DIR := $(TB_DIR)/build
 
-TB_TOP_SOURCES := $(shell find . -type f \( -iname "*.v" -o -iname "*.sv" \)   -not -path "./jtag/*" -not -path "*./Tile/gl/*")
+TB_TOP_SOURCES := $(shell find . -type f \( -iname "*.v" -o -iname "*.sv" \)   -not -path "./jtag/*" -not -path "*./Tile/gl/*" -not -path "*/in_fifo/*" )
+TB_INCLUDE_DIRS += ./common_constants/ ./controller/usb_common/
+
+# Define a variable to hold the include flags
+TB_INCLUDE_FLAGS = $(foreach dir,$(TB_INCLUDE_DIRS),-I $(dir))
 
 DESIGN=counter
 DESIGN_BITSTREAM=${TB_DIR}/${DESIGN}.bin
@@ -43,7 +47,6 @@ lint:
 	-Icontroller/usb_dfu \
 	-Icontroller/usb_cdc \
 	-Icontroller/usb_common \
-	-Icontroller/usb_common/in_fifo \
 	-Icontroller/usb_common/out_fifo \
 	-Icontroller/bootloader \
 	-Icontroller/bootloader/flash/ \
@@ -52,7 +55,7 @@ lint:
 	-f verilator_filelist.f > lint.log 2>&1
 
 $(TB_BUILD_DIR)/%.vvp: $(TB_BUILD_DIR)
-	iverilog -D TOP_MODULE=$* -D DUMP_FILE="\"./build/$*.fst\"" -s $* -o tb/build/$*.vvp ${TB_TOP_SOURCES} 
+	iverilog -D TOP_MODULE=$* -D DUMP_FILE="\"./build/$*.fst\"" -s $* -o tb/build/$*.vvp ${TB_TOP_SOURCES} ${TB_INCLUDE_FLAGS}
 	python3 ${TB_DIR}/makehex.py ${DESIGN_BITSTREAM} ${MAX_BITBYTES} ${DESIGN_BITSTREAM_HEX}
 	(cd $(TB_DIR) && vvp build/$*.vvp -fst)
 
