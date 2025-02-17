@@ -1,5 +1,5 @@
 `timescale 1ps / 1ps
-module usb_uart_bridge (
+module config_usb_cdc (
     input        clk_i,
     input        reset_n_i,
     output [7:0] in_data_o,

@@ -220,7 +220,7 @@ module controller #(
         .dn_rx_i     (dn_rx)
     );
 
-    usb_uart_bridge usb_uart_bridge_inst (
+    config_usb_cdc config_usb_cdc (
         .clk_i              (clk_system_i),
         .reset_n_i          (reset_n_i),
         .in_data_o          (in_data),

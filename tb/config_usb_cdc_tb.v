@@ -1,6 +1,6 @@
 `timescale 1ps / 1ps
 
-module usb_uart_bridge_tb;
+module config_usb_cdc_tb;
 
     reg         clk_system;
     wire        reset_n;
@@ -16,7 +16,7 @@ module usb_uart_bridge_tb;
     localparam MAX_BITBYTES = 16384;
     localparam PREAMBLE_SIZE = 16;
     // Instantiate the DUT
-    usb_uart_bridge dut (
+    config_usb_cdc dut (
         .clk_i              (clk_system),
         .reset_n_i          (reset_n),
         .in_data_o          (in_data),

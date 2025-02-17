@@ -63,7 +63,7 @@ eFPGA_top_tb \
 top_tb \
 config_usb_tb \
 config_usb_eFPGA_top_tb\
-usb_uart_bridge_tb:\
+config_usb_cdc_tb:\
 %: $(TB_BUILD_DIR)/%.vvp
 
 clean_local:
