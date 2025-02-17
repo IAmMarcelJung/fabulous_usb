@@ -4,6 +4,7 @@ module tb_utils #(
     input             clk_i,
     input      [31:0] write_data_i,
     input             word_write_strobe_i,
+    input             out_ready,
     output            reset_n_o,
     output reg [ 7:0] out_data_o,
     output reg        out_valid_o
@@ -41,7 +42,6 @@ module tb_utils #(
 
     task simulate_usb_bitstream_output;
         input integer wait_cylces;
-        input out_ready;
 
         integer i, timeout_counter;
         integer current_byte_pos;
