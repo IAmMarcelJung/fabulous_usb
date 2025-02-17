@@ -22,7 +22,10 @@ module controller #(
 
     // eFPGA related signals
     output [31:0] efpga_write_data_o,
-    output        efpga_write_strobe_o
+    output        efpga_write_strobe_o,
+
+    // Debug signal
+    output usb_led_o
 );
 
     // USB related definitions
@@ -35,18 +38,23 @@ module controller #(
 
     localparam BUFFER_SIZE = 'd512;
 
+    // PHY signals
     wire        dp_pu;
     wire        dp_rx;
     wire        dn_rx;
     wire        dp_tx;
     wire        dn_tx;
     wire        tx_en;
+
+    // CDC signals
     wire [ 7:0] out_data;
     wire        out_valid;
-    wire        in_ready;
+    wire        out_ready;
     wire [ 7:0] in_data;
     wire        in_valid;
-    wire        out_ready;
+    wire        in_ready;
+
+    // DFU signals
     wire [ 2:0] dfu_alt;
     wire        dfu_out_en;
     wire        dfu_in_en;
@@ -59,9 +67,11 @@ module controller #(
     wire        dfu_clear_status;
     wire        dfu_busy;
     wire [ 3:0] dfu_status;
+    wire        dfu_mode;
+
+    // status signals
     wire [10:0] frame;
     wire        configured;
-    wire        dfu_mode;
 
 
     assign dn_io       = (tx_en) ? dn_tx : 1'bz;
@@ -125,7 +135,7 @@ module controller #(
     //     .write_data_o       (efpga_write_data_o)
     // );
     //
-
+    //
     // usb_dfu #(
     //     .VENDORID     (16'h1D50),
     //     .PRODUCTID    (16'h6130),
@@ -176,7 +186,7 @@ module controller #(
     //     .dp_tx_o           (dp_tx),
     //     .dn_tx_o           (dn_tx)
     // );
-    //
+
 
     usb_cdc #(
         .VENDORID              (16'h1D50),
@@ -188,14 +198,17 @@ module controller #(
         .USE_APP_CLK           (USE_SYSTEM_CLK),
         .APP_CLK_FREQ          (SYSTEM_CLK_FREQUENCY)
     ) usb_cdc (
-        .clk_i       (clk_system_i),
+        .clk_i       (clk_usb_i),
         .rstn_i      (reset_n_i),
-        .app_clk_i   (clk_usb_i),
+        .app_clk_i   (clk_system_i),
         .out_data_o  (out_data),
         .out_valid_o (out_valid),
         .out_ready_i (out_ready),
+        // .out_ready_i (in_ready),
         .in_data_i   (in_data),
+        // .in_data_i   (out_data),
         .in_valid_i  (in_valid),
+        // .in_valid_i  (out_valid),
         .in_ready_o  (in_ready),
         .frame_o     (frame),
         .configured_o(configured),
@@ -217,7 +230,8 @@ module controller #(
         .out_valid_i        (out_valid),
         .out_ready_o        (out_ready),
         .word_write_strobe_o(efpga_write_strobe_o),
-        .write_data_o       (efpga_write_data_o)
+        .write_data_o       (efpga_write_data_o),
+        .usb_led_o          (usb_led_o)
     );
 
 endmodule

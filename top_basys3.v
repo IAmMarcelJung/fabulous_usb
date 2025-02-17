@@ -2,8 +2,8 @@
 module top_basys3 #(
     parameter NUM_OF_ANODES     = 4,
     parameter NUM_USED_IOS      = 8,
-    parameter NUM_USED_LEDS     = 4,
-    parameter NUM_USED_SWITCHES = 4
+    parameter NUM_USED_LEDS     = 5,
+    parameter NUM_USED_SWITCHES = 3
 ) (
     //External IO port
     inout [NUM_USED_IOS-1:0] user_io,
@@ -29,8 +29,11 @@ module top_basys3 #(
     output                     sck_o,
     output                     cs_o,
     input                      poci_i,
-    output                     pico_o
+    output                     pico_o,
+
+    output usb_led_o
 );
+
 
     localparam LED_FIRST_IO = NUM_USED_SWITCHES;
     localparam LED_LAST_IO = LED_FIRST_IO + NUM_USED_LEDS - 1;
@@ -71,12 +74,20 @@ module top_basys3 #(
 
     reg [29:0] ctr;
 
-    pll_48_12_5_MHz pll_48_12_5_MHz_inst (
-        .clk_in1     (clk),         // 100 MHz input clock
-        .reset       (reset),       // Reset signal to the clocking wizard
-        .clk_12_5_MHz(clk_system),  // 12.5 MHz output clock
-        .clk_48_MHz  (clk_usb),     // 48 MHz output clock
-        .locked      (locked)       // Locked output signal
+    // pll_48_12_5_MHz pll_48_12_5_MHz_inst (
+    //     .clk_in1     (clk),         // 100 MHz input clock
+    //     .reset       (reset),       // Reset signal to the clocking wizard
+    //     .clk_12_5_MHz(clk_system),  // 12.5 MHz output clock
+    //     .clk_48_MHz  (clk_usb),     // 48 MHz output clock
+    //     .locked      (locked)       // Locked output signal
+    // );
+    pll_48_24_MHz pll_48_24_MHz_int (
+        .clk_in1   (clk),         // 100 MHz input clock
+        .reset     (reset),       // Reset signal to the clocking wizard
+        .clk_12_MHz(clk_system),  // 12 MHz output clock
+        .clk_24_MHz(),            // 24 MHz output clock
+        .clk_48_MHz(clk_usb),     // 48 MHz output clock
+        .locked    (locked)       // Locked output signal
     );
 
     always @(posedge clk_system) ctr <= ctr + 1'b1;
@@ -98,7 +109,8 @@ module top_basys3 #(
         .sck_o       (sck_o),
         .cs_o        (cs_o),
         .poci_i      (poci_i),
-        .pico_o      (pico_o)
+        .pico_o      (pico_o),
+        .usb_led_o   (usb_led_o)
     );
 
 endmodule

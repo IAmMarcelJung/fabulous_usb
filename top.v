@@ -1,14 +1,14 @@
 `timescale 1ps / 1ps
 module top #(
-    parameter NUMBER_OF_ROWS     = 4,
-    parameter NUMBER_OF_COLS     = 5,
-    parameter FRAME_BITS_PER_ROW = 32,
-    parameter MAX_FRAMES_PER_COL = 20,
-    parameter DESYNC_FLAG        = 20,
-    parameter FRAME_SELECT_WIDTH = 5,
-    parameter ROW_SELECT_WIDTH   = 5,
-    parameter UART_BAUD_RATE     = 115_200,
-    parameter CLOCK_FREQUENCY    = 12_500_000
+    parameter NUMBER_OF_ROWS         = 4,
+    parameter NUMBER_OF_COLS         = 5,
+    parameter FRAME_BITS_PER_ROW     = 32,
+    parameter MAX_FRAMES_PER_COL     = 20,
+    parameter DESYNC_FLAG            = 20,
+    parameter FRAME_SELECT_WIDTH     = 5,
+    parameter ROW_SELECT_WIDTH       = 5,
+    parameter UART_BAUD_RATE         = 115_200,
+    parameter FABRIC_CLOCK_FREQUENCY = 12_000_000
 
 ) (
 
@@ -38,17 +38,12 @@ module top #(
     output sck_o,
     output cs_o,
     input  poci_i,
-    output pico_o
+    output pico_o,
+
+    output usb_led_o
 );
 
 
-    // DFU related parameters
-    localparam CHANNELS = 'd1;
-    localparam BIT_SAMPLES = 'd4;
-    localparam TRANSFER_SIZE = 'd256;
-    localparam POLLTIMEOUT = 'd10;  // ms
-    localparam MS20 = 1;
-    localparam WCID = 1;
     //BlockRAM ports
 
     wire [                                     64-1:0] RAM2FAB_D_I;
@@ -119,7 +114,7 @@ module top #(
         .FRAME_SELECT_WIDTH(FRAME_SELECT_WIDTH),
         .ROW_SELECT_WIDTH  (ROW_SELECT_WIDTH),
         .UART_BAUD_RATE    (UART_BAUD_RATE),
-        .CLOCK_FREQUENCY   (CLOCK_FREQUENCY)
+        .CLOCK_FREQUENCY   (FABRIC_CLOCK_FREQUENCY)
     ) eFPGA_top_inst (
 
         // verilator lint_off PINCONNECTEMPTY
@@ -146,8 +141,8 @@ module top #(
     );
 
     controller #(
-        .USE_SYSTEM_CLK      (0),
-        .SYSTEM_CLK_FREQUENCY(12_500_000)
+        .USE_SYSTEM_CLK      (1),
+        .SYSTEM_CLK_FREQUENCY(FABRIC_CLOCK_FREQUENCY / 1_000_000)
     ) controller_inst (
         .clk_system_i        (clk_system_i),
         .reset_n_i           (reset_n_i),
@@ -162,7 +157,8 @@ module top #(
         .poci_i              (poci_i),
         .pico_o              (pico_o),
         .efpga_write_data_o  (efpga_write_data),
-        .efpga_write_strobe_o(efpga_write_strobe)
+        .efpga_write_strobe_o(efpga_write_strobe),
+        .usb_led_o           (usb_led_o)
     );
 
 
