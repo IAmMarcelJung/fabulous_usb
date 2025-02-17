@@ -302,17 +302,19 @@ module phy_rx #(
                         end else begin
                             shift_register_d = shift_register_q;
                         end
-                    end else begin
+                    end else begin  // normal data reception
                         if (nrzi_q[1:0] == nrzi_q[3:2]) begin
                             shift_register_d[8] = 1'b1;
                             stuffing_cnt_d      = stuffing_cnt_q + 1;
                         end else begin
                             shift_register_d[8] = 1'b0;
                         end
+                        // received one byte
                         if (shift_register_q[0] == 1'b1) begin
                             shift_register_d[7:0] = 8'b10000000;
                             rx_data_d             = shift_register_q[8:1];
                             rx_valid              = 1'b1;
+                            // receive more bits
                         end else begin
                             shift_register_d[7:0] = shift_register_q[8:1];
                         end
