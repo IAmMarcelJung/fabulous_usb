@@ -169,9 +169,7 @@ set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports {dp_io}]
 #create_clock -period 10.00 -waveform {0 5} [get_ports clk]
 
 
-set_property ALLOW_COMBINATORIAL_LOOPS true [get_nets -hierarchical -filter {NAME =~ *BEG*}]
-#set_disable_timing [get_pins -hierarchical -filter {NAME =~ *BEG*}]
-#set_disable_timing [get_pins -filter {REF_PIN_NAME =~ "*BEG*"} -of_objects [get_cells -hierarchical -quiet -filter {NAME =~ "*switch_matrix*"}]]
+set_property ALLOW_COMBINATORIAL_LOOPS true [get_nets -hierarchical -regexp {.*J\w*BEG.*}]
 
 set_false_path -to [get_ports {ReceiveLED an heartbeat dp_pu_o dn_io dp_io pico_o sck_o cs_o usb_led_o}]
 set_false_path -from [get_ports {reset user_io Rx dn_io dp_io poci_i}]
