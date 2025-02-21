@@ -59,6 +59,7 @@ $(TB_BUILD_DIR)/%.vvp: $(TB_BUILD_DIR)
 	python3 ${TB_DIR}/makehex.py ${DESIGN_BITSTREAM} ${MAX_BITBYTES} ${DESIGN_BITSTREAM_HEX}
 	(cd $(TB_DIR) && vvp build/$*.vvp -fst)
 
+phy_rx_tb \
 eFPGA_top_tb \
 top_tb \
 config_usb_tb \
