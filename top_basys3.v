@@ -25,13 +25,14 @@ module top_basys3 #(
     inout                      dp_io,      // USB+
     inout                      dn_io,      // USB-
     output                     dp_pu_o,    // USB 1.5kOhm Pullup EN
+`ifdef DEBUG
     output                     led_o,
+`endif
     output                     sck_o,
     output                     cs_o,
     input                      poci_i,
-    output                     pico_o,
+    output                     pico_o
 
-    output usb_led_o
 );
 
 
@@ -91,7 +92,7 @@ module top_basys3 #(
     );
 
     always @(posedge clk_system) ctr <= ctr + 1'b1;
-    assign heartbeat = ctr[25];
+    assign heartbeat = ctr[23];
 
     top top_inst (
         .clk_system_i(clk_system),
@@ -105,12 +106,13 @@ module top_basys3 #(
         .dp_io       (dp_io),
         .dn_io       (dn_io),
         .dp_pu_o     (dp_pu_o),
+`ifdef DEBUG
         .usb_check_o (led_o),
+`endif
         .sck_o       (sck_o),
         .cs_o        (cs_o),
         .poci_i      (poci_i),
-        .pico_o      (pico_o),
-        .usb_led_o   (usb_led_o)
+        .pico_o      (pico_o)
     );
 
 endmodule

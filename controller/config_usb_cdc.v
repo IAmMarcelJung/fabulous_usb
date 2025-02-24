@@ -9,16 +9,15 @@ module config_usb_cdc (
     // When both in_ready_i and in_valid_o are high, in_data_o shall
     //   be consumed.
 
-    input      [ 7:0] out_data_i,
-    input             out_valid_i,
+    input  [ 7:0] out_data_i,
+    input         out_valid_i,
     // While out_valid_i is high, the out_data_i shall be valid and both
     //   out_valid_i and out_data_i shall not change until consumed.
-    output            out_ready_o,
+    output        out_ready_o,
     // When both out_valid_i and out_ready_o are high, the out_data_i shall
     //   be consumed.
-    output            word_write_strobe_o,
-    output     [31:0] write_data_o,
-    output reg        usb_led_o
+    output        word_write_strobe_o,
+    output [31:0] write_data_o
 );
 
 
@@ -44,15 +43,12 @@ module config_usb_cdc (
             byte_index     <= 2'b0;
             byte_index_old <= 2'b0;
             get_data_flag  <= 1'b0;
-            usb_led_o      <= 1'b0;
         end else begin
             byte_index_old <= byte_index;
             if (out_valid_i) begin
                 word_buffer <= {word_buffer[23:0], out_data_i};
                 if (word_buffer[31:8] == 24'h00AAFF &&
                     (word_buffer[6:0] == {7'h1} || word_buffer[6:0] == {7'h2})) begin
-                    // TODO: maybe remove this when done checking
-                    usb_led_o     <= 1'b1;
                     byte_index    <= 2'b01;
                     get_data_flag <= 1'b1;
                 end

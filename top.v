@@ -24,7 +24,6 @@ module top #(
     input  [(NUMBER_OF_ROWS * 2)-1:0] O_top,
     output [(NUMBER_OF_ROWS * 2)-1:0] T_top,
 
-
     // JTAG port
     // input  tms,
     // input  tdi,
@@ -38,9 +37,8 @@ module top #(
     output sck_o,
     output cs_o,
     input  poci_i,
-    output pico_o,
+    output pico_o
 
-    output usb_led_o
 );
 
 
@@ -151,14 +149,15 @@ module top #(
         .dp_io               (dp_io),
         .dn_io               (dn_io),
         .dp_pu_o             (dp_pu_o),
-        .usb_check_o         (usb_check_o),
         .sck_o               (sck_o),
         .cs_o                (cs_o),
         .poci_i              (poci_i),
         .pico_o              (pico_o),
+`ifdef DEBUG
+        .usb_check_o         (usb_check_o),
+`endif
         .efpga_write_data_o  (efpga_write_data),
-        .efpga_write_strobe_o(efpga_write_strobe),
-        .usb_led_o           (usb_led_o)
+        .efpga_write_strobe_o(efpga_write_strobe)
     );
 
 
