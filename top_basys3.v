@@ -75,13 +75,6 @@ module top_basys3 #(
 
     reg [29:0] ctr;
 
-    // pll_48_12_5_MHz pll_48_12_5_MHz_inst (
-    //     .clk_in1     (clk),         // 100 MHz input clock
-    //     .reset       (reset),       // Reset signal to the clocking wizard
-    //     .clk_12_5_MHz(clk_system),  // 12.5 MHz output clock
-    //     .clk_48_MHz  (clk_usb),     // 48 MHz output clock
-    //     .locked      (locked)       // Locked output signal
-    // );
     pll_48_24_MHz pll_48_24_MHz_int (
         .clk_in1   (clk),         // 100 MHz input clock
         .reset     (reset),       // Reset signal to the clocking wizard
