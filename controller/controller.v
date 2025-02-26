@@ -37,7 +37,9 @@ module controller #(
     // PHY signals
     wire                    dp_pu;
     wire                    dp_tx;
+    wire                    dp_rx;
     wire                    dn_tx;
+    wire                    dn_rx;
     wire                    tx_en;
 
     // Registers for phy signals to decouple the macro
@@ -67,11 +69,8 @@ module controller #(
     assign dp_tx_o = dp_tx_r;
     assign dp_pu_o = dp_pu_r;
     assign tx_en_o = tx_en_r;
-
-    assign dn_tx_o = dn_tx;
-    assign dp_tx_o = dp_tx;
-    assign dp_pu_o = dp_pu;
-    assign tx_en_o = tx_en;
+    assign dp_rx   = dp_rx_r;
+    assign dn_rx   = dn_rx_r;
 
     // TODO: set an actual value
     assign boot_o  = 1'b0;
@@ -82,23 +81,23 @@ module controller #(
 
 
 
-    // always @(posedge clk_system_i, negedge reset_n_i) begin
-    //     if (!reset_n_i) begin
-    //         dp_tx_r <= 1'b0;
-    //         dn_tx_r <= 1'b0;
-    //         dp_pu_r <= 1'b0;
-    //         dp_rx_r <= 1'b0;
-    //         dn_rx_r <= 1'b0;
-    //         tx_en_r <= 1'b0;
-    //     end else begin
-    //         dp_tx_r <= dp_tx;
-    //         dn_tx_r <= dn_tx;
-    //         dp_pu_r <= dp_pu;
-    //         dp_rx_r <= dp_rx_i;
-    //         dn_rx_r <= dn_rx_i;
-    //         tx_en_r <= tx_en;
-    //     end
-    // end
+    always @(posedge clk_system_i, negedge reset_n_i) begin
+        if (!reset_n_i) begin
+            dp_tx_r <= 1'b0;
+            dn_tx_r <= 1'b0;
+            dp_pu_r <= 1'b0;
+            dp_rx_r <= 1'b0;
+            dn_rx_r <= 1'b0;
+            tx_en_r <= 1'b0;
+        end else begin
+            dp_tx_r <= dp_tx;
+            dn_tx_r <= dn_tx;
+            dp_pu_r <= dp_pu;
+            dp_rx_r <= dp_rx_i;
+            dn_rx_r <= dn_rx_i;
+            tx_en_r <= tx_en;
+        end
+    end
 
 `ifdef USB_DFU
 
@@ -189,8 +188,8 @@ module controller #(
         .out_ready_i       (in_ready),
         .in_data_i         (out_data),
         .in_valid_i        (out_valid),
-        .dp_rx_i           (dp_rx_i),
-        .dn_rx_i           (dn_rx_i),
+        .dp_rx_i           (dp_rx),
+        .dn_rx_i           (dn_rx),
         .out_data_o        (in_data),
         .out_valid_o       (out_valid),
         .in_ready_o        (in_ready),
@@ -249,8 +248,8 @@ module controller #(
         .tx_en_o     (tx_en),
         .dp_tx_o     (dp_tx),
         .dn_tx_o     (dn_tx),
-        .dp_rx_i     (dp_rx_i),
-        .dn_rx_i     (dn_rx_i)
+        .dp_rx_i     (dp_rx),
+        .dn_rx_i     (dn_rx)
     );
 
     config_usb_cdc config_usb_cdc (
