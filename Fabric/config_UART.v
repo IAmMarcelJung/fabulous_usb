@@ -19,7 +19,6 @@ module config_UART #(
 );
 
     localparam TIME_TO_SEND_COUNTER_INIT_VALUE = 16777 - 1;  //200000000;
-    localparam TEST_FILE_CHECKSUM = 20'h4FB00;
 
     // NOTE: The user has to make sure that the relation division does not
     // result in a value that requires more than 12 bits. This is will
