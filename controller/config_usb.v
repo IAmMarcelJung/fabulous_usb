@@ -98,8 +98,7 @@ module config_usb #(
         .out_valid_i        (dfu_out_valid_i),
         .out_ready_o        (dfu_out_ready),
         .word_write_strobe_o(word_write_strobe_o),
-        .write_data_o       (write_data_o),
-        .usb_led_o          ()
+        .write_data_o       (write_data_o)
     );
 
     //     // TODO: Check if this works

@@ -56,7 +56,17 @@ module top_basys3 #(
     wire                    clk_usb;
     wire                    locked;
 
+    wire                    dp_tx;
+    wire                    dp_rx;
+    wire                    dn_tx;
+    wire                    dn_rx;
+    wire                    tx_en;
+    wire                    dp_pu;
+
     assign reset_n = !reset & locked;
+    assign dp_io   = tx_en ? dp_tx : 1'bz;
+    assign dn_io   = tx_en ? dn_tx : 1'bz;
+    assign dp_pu_o = dp_pu ? 1'b1 : 1'bz;
 
     // verilator lint_off GENUNNAMED
     genvar i;
@@ -96,9 +106,12 @@ module top_basys3 #(
         .I_top       (I_top),
         .O_top       (O_top),
         .T_top       (T_top),
-        .dp_io       (dp_io),
-        .dn_io       (dn_io),
-        .dp_pu_o     (dp_pu_o),
+        .dp_tx_o     (dp_tx),
+        .dp_rx_i     (dp_rx),
+        .dn_tx_o     (dn_tx),
+        .dn_rx_i     (dp_rx),
+        .dp_pu_o     (dp_rx),
+        .tx_en_o     (tx_en),
 `ifdef DEBUG
         .usb_check_o (led_o),
 `endif

@@ -30,9 +30,12 @@ module top #(
     // output tdo,
     // input  tck,
 
-    inout  dp_io,        // USB+
-    inout  dn_io,        // USB-
+    input  dp_rx_i,      // USB+ RX
+    output dp_tx_o,      // USB+ TX
+    input  dn_rx_i,      // USB- RX
+    output dn_tx_o,      // USB- TX
     output dp_pu_o,      // USB 1.5kOhm Pullup EN
+    output tx_en_o,
     output usb_check_o,
     output sck_o,
     output cs_o,
@@ -146,9 +149,12 @@ module top #(
         .reset_n_i           (reset_n_i),
         .boot_o              (boot),
         .clk_usb_i           (clk_usb_i),
-        .dp_io               (dp_io),
-        .dn_io               (dn_io),
+        .dp_tx_o             (dp_tx_o),
+        .dp_rx_i             (dp_rx_i),
+        .dn_tx_o             (dn_tx_o),
+        .dn_rx_i             (dn_rx_i),
         .dp_pu_o             (dp_pu_o),
+        .tx_en_o             (tx_en_o),
         .sck_o               (sck_o),
         .cs_o                (cs_o),
         .poci_i              (poci_i),
