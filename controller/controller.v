@@ -33,7 +33,6 @@ module controller #(
     // USB related definitions
     localparam CHANNELS = 'd1;
     localparam BIT_SAMPLES = 'd4;
-    localparam BUFFER_SIZE = 'd512;
 
     // PHY signals
     wire                    dp_pu;
@@ -110,6 +109,7 @@ module controller #(
     localparam POLLTIMEOUT = 'd10;  // ms
     localparam MS20 = 1;
     localparam WCID = 1;
+    localparam BUFFER_SIZE = 'd512;
 
     // DFU signals
     wire [                2:0] dfu_alt;
