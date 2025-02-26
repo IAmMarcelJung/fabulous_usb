@@ -67,6 +67,8 @@ module top_basys3 #(
     assign dp_io   = tx_en ? dp_tx : 1'bz;
     assign dn_io   = tx_en ? dn_tx : 1'bz;
     assign dp_pu_o = dp_pu ? 1'b1 : 1'bz;
+    assign dp_rx   = dp_io;
+    assign dn_rx   = dn_io;
 
     // verilator lint_off GENUNNAMED
     genvar i;
@@ -109,8 +111,8 @@ module top_basys3 #(
         .dp_tx_o     (dp_tx),
         .dp_rx_i     (dp_rx),
         .dn_tx_o     (dn_tx),
-        .dn_rx_i     (dp_rx),
-        .dp_pu_o     (dp_rx),
+        .dn_rx_i     (dn_rx),
+        .dp_pu_o     (dp_pu),
         .tx_en_o     (tx_en),
 `ifdef DEBUG
         .usb_check_o (led_o),
