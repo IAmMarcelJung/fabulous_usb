@@ -39,7 +39,7 @@ set_property -dict { PACKAGE_PIN U14   IOSTANDARD LVCMOS33 } [get_ports {user_io
 #set_property -dict { PACKAGE_PIN W3    IOSTANDARD LVCMOS33 } [get_ports {led[10]}]
 #set_property -dict { PACKAGE_PIN U3    IOSTANDARD LVCMOS33 } [get_ports {led[11]}]
 #set_property -dict { PACKAGE_PIN P3    IOSTANDARD LVCMOS33 } [get_ports {led[12]}]
-set_property -dict { PACKAGE_PIN N3    IOSTANDARD LVCMOS33 } [get_ports {usb_led_o}]
+# set_property -dict { PACKAGE_PIN N3    IOSTANDARD LVCMOS33 } [get_ports {usb_led_o}]
 set_property -dict { PACKAGE_PIN P1    IOSTANDARD LVCMOS33 } [get_ports {heartbeat}]
 set_property -dict { PACKAGE_PIN L1    IOSTANDARD LVCMOS33 } [get_ports {led_o}]
 
@@ -171,5 +171,5 @@ set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports {dp_io}]
 
 set_property ALLOW_COMBINATORIAL_LOOPS true [get_nets -hierarchical -regexp {.*J\w*BEG.*}]
 
-set_false_path -to [get_ports {ReceiveLED an heartbeat dp_pu_o dn_io dp_io pico_o sck_o cs_o usb_led_o}]
+set_false_path -to [get_ports {ReceiveLED an heartbeat dp_pu_o dn_io dp_io pico_o sck_o cs_o}]
 set_false_path -from [get_ports {reset user_io Rx dn_io dp_io poci_i}]
