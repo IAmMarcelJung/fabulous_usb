@@ -31,7 +31,7 @@ $(TB_BUILD_DIR):
 	mkdir -p $(TB_BUILD_DIR)
 
 lint:
-	verilator --lint-only -Wall -Wpedantic --top-module top *.v \
+	verilator --lint-only -Wall -Wpedantic --top-module top *.v -DDEBUG \
 	-IFabric/ \
 	-ITile/ \
 	-ITile/include/ \
