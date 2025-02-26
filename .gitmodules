@@ -1,0 +1,3 @@
+[submodule "JTAG-interface"]
+	path = JTAG-interface
+	url = git@github.com:vera2270/JTAG-interface.git
