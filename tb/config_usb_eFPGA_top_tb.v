@@ -63,20 +63,20 @@ module config_usb_eFPGA_top_tb;
 
     // Instantiate both the fabric and the reference DUT
     eFPGA_top top_i (
-        .I_top           (I_top),
-        .T_top           (T_top),
-        .O_top           (O_top),
-        .A_config_C      (A_cfg),
-        .B_config_C      (B_cfg),
-        .CLK             (clk),
-        .resetn          (reset_n),
-        .SelfWriteStrobe (efpga_write_strobe),
-        .efpga_write_data(efpga_write_data),
-        .Rx              (Rx),
-        .ComActive       (ComActive),
-        .ReceiveLED      (ReceiveLED),
-        .s_clk           (s_clk),
-        .s_data          (s_data)
+        .I_top          (I_top),
+        .T_top          (T_top),
+        .O_top          (O_top),
+        .A_config_C     (A_cfg),
+        .B_config_C     (B_cfg),
+        .CLK            (clk),
+        .resetn         (reset_n),
+        .SelfWriteStrobe(efpga_write_strobe),
+        .SelfWriteData  (efpga_write_data),
+        .Rx             (Rx),
+        .ComActive      (ComActive),
+        .ReceiveLED     (ReceiveLED),
+        .s_clk          (s_clk),
+        .s_data         (s_data)
     );
 
 
