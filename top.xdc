@@ -152,8 +152,8 @@ set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports {dp_io}]
 
 
 ## Configuration options, can be used for all designs
-# set_property CONFIG_VOLTAGE 3.3 [current_design]
-# set_property CFGBVS VCCO [current_design]
+set_property CONFIG_VOLTAGE 3.3 [current_design]
+set_property CFGBVS VCCO [current_design]
 
 ## SPI configuration mode options for QSPI boot, can be used for all designs
 # set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
@@ -165,11 +165,9 @@ set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports {dp_io}]
 
 ### Timing constraints
 
-# Input clock
-#create_clock -period 10.00 -waveform {0 5} [get_ports clk]
 
 
-set_property ALLOW_COMBINATORIAL_LOOPS true [get_nets -hierarchical -regexp {.*J\w*BEG.*}]
+set_property ALLOW_COMBINATORIAL_LOOPS true [get_nets -hierarchical -filter {NAME =~ *BEG*}]
 
 set_false_path -to [get_ports {ReceiveLED an heartbeat dp_pu_o dn_io dp_io pico_o sck_o cs_o}]
 set_false_path -from [get_ports {reset user_io Rx dn_io dp_io poci_i}]
