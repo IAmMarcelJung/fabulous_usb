@@ -72,6 +72,7 @@ module controller #(
     assign dp_rx   = dp_rx_r;
     assign dn_rx   = dn_rx_r;
 
+
     // TODO: set an actual value
     assign boot_o  = 1'b0;
     assign sck_o   = 1'b0;
