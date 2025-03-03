@@ -15,10 +15,12 @@ module top_basys3 #(
     output ReceiveLED,
 
     // JTAG port
-    // input  tms,
-    // input  tdi,
-    // output tdo,
-    // input  tck,
+`ifdef JTAG
+    input  tms_i,
+    input  tdi_i,
+    output tdo_o,
+    input  tck_i,
+`endif
 
     output                     heartbeat,
     output [NUM_OF_ANODES-1:0] an,         // 7 segment anodes
@@ -116,6 +118,12 @@ module top_basys3 #(
         .tx_en_o     (tx_en),
 `ifdef DEBUG
         .usb_check_o (led_o),
+`endif
+`ifdef JTAG
+        .tms         (tms_i),
+        .tdi         (tdi_i),
+        .tdo         (tdo_o),
+        .tck         (tck_i),
 `endif
         .sck_o       (sck_o),
         .cs_o        (cs_o),
