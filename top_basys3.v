@@ -22,13 +22,13 @@ module top_basys3 #(
     input  tck_i,
 `endif
 
-    output                     heartbeat,
     output [NUM_OF_ANODES-1:0] an,         // 7 segment anodes
     inout                      dp_io,      // USB+
     inout                      dn_io,      // USB-
     output                     dp_pu_o,    // USB 1.5kOhm Pullup EN
 `ifdef DEBUG
     output                     led_o,
+    output                     heartbeat,
 `endif
     output                     sck_o,
     output                     cs_o,
@@ -87,8 +87,6 @@ module top_basys3 #(
     // turn off 7 segment display
     assign an                              = {NUM_OF_ANODES{1'b1}};
 
-    reg [29:0] ctr;
-
     pll_48_24_MHz pll_48_24_MHz_int (
         .clk_in1   (clk),         // 100 MHz input clock
         .reset     (reset),       // Reset signal to the clocking wizard
@@ -100,6 +98,7 @@ module top_basys3 #(
         .locked    (locked)       // Locked output signal
     );
 
+    reg [29:0] ctr;
     always @(posedge clk_system) ctr <= ctr + 1'b1;
     assign heartbeat = ctr[23];
 
