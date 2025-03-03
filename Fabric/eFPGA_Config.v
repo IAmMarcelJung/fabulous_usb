@@ -33,8 +33,9 @@ module eFPGA_Config (
     input [32-1:0] SelfWriteData;  // configuration data write port
     input SelfWriteStrobe;  // must decode address and write enable
 
-    output [32-1:0] ConfigWriteData;
-    output ConfigWriteStrobe;
+
+    (*MARK_DEBUG*) output [32-1:0] ConfigWriteData;
+    (*MARK_DEBUG*) output ConfigWriteStrobe;
 
     output [FRAME_BITS_PER_ROW-1:0] FrameAddressRegister;
     output LongFrameStrobe;
