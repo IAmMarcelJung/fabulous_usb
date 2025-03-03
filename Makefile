@@ -1,7 +1,7 @@
 FAMILY  = artix7
 PART    = xc7a35tcpg236-1
 BOARD   = basys3
-PROJECT = top
+PROJECT = top_basys3
 CHIPDB  = ${ARTIX7_CHIPDB}
 
 
@@ -15,8 +15,22 @@ MAX_BITBYTES=16384
 TB_DIR := ./tb
 TB_BUILD_DIR := $(TB_DIR)/build
 
-TB_TOP_SOURCES := $(shell find . -type f \( -iname "*.v" -o -iname "*.sv" \)   -not -path "./jtag/*" -not -path "*./Tile/gl/*" -not -path "*/in_fifo/*" )
+TB_TOP_SOURCES := $(shell find . -type f \( -iname "*.v" -o -iname "*.sv" \) \
+				  -not -path "./jtag/*" \
+				  -not -path "./JTAG-interface/*" \
+				  -not -path "*./Tile/gl/*" \
+				  -not -path "*/in_fifo/*" )
 TB_INCLUDE_DIRS += ./common_constants/ ./controller/usb_common/
+
+# Used for the open source flow
+ADDITIONAL_SOURCES := $(shell find . -type f \( -iname "*.v" -o -iname "*.sv" \) \
+					  -not -name "${PROJECT}.v" \
+					  -not -name "*synth*" \
+					  -not -name "*_tb.v*" \
+					  -not -path "./tb/*" \
+					  -not -path "./JTAG-interface/*" \
+					  -not -path "*/in_fifo/*" \
+					  -not -path "./jtag/*")
 
 # Define a variable to hold the include flags
 TB_INCLUDE_FLAGS = $(foreach dir,$(TB_INCLUDE_DIRS),-I $(dir))
@@ -52,6 +66,7 @@ lint:
 	-Icontroller/bootloader/flash/ \
 	-Icontroller/bootloader/buffer/ \
 	-Itb/ \
+	-IJTAG-interface/ \
 	-f verilator_filelist.f > lint.log 2>&1
 
 $(TB_BUILD_DIR)/%.vvp: $(TB_BUILD_DIR)

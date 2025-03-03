@@ -24,11 +24,13 @@ module top #(
     input  [(NUMBER_OF_ROWS * 2)-1:0] O_top,
     output [(NUMBER_OF_ROWS * 2)-1:0] T_top,
 
+`ifdef JTAG
     // JTAG port
-    // input  tms,
-    // input  tdi,
-    // output tdo,
-    // input  tck,
+    input  tms,
+    input  tdi,
+    output tdo,
+    input  tck,
+`endif
 
     input  dp_rx_i,      // USB+ RX
     output dp_tx_o,      // USB+ TX
@@ -44,6 +46,8 @@ module top #(
 
 );
 
+    // Each W_IO tile has two IOs
+    localparam NUM_OF_FABRIC_IOS = NUMBER_OF_ROWS * 2;
 
     //BlockRAM ports
 
@@ -68,43 +72,49 @@ module top #(
     wire                                               LocalWriteStrobe;
     wire [                       ROW_SELECT_WIDTH-1:0] RowSelect;
 
-    //JTAG related signals
-    // wire [                           NUM_USED_IOS-1:0] I_out;
-    // wire [                           NUM_USED_IOS-1:0] O_in;
-    // wire [                                       31:0] JTAGWriteData;
-    // wire                                               JTAGWriteStrobe;
-    // wire                                               JTAGActive;
-
     wire                                               boot;
+    wire [                                       31:0] usb_write_data;
+    wire                                               usb_write_strobe;
     wire [                                       31:0] efpga_write_data;
     wire                                               efpga_write_strobe;
     wire                                               efpga_reset_n;
 
     assign efpga_reset_n = reset_n_i & !boot;
 
-    // tap #(
-    //     .BS_REG_IN_LEN (NUM_USED_IOS),
-    //     .BS_REG_OUT_LEN(NUM_USED_IOS)
-    // ) Inst_jtag (
-    //     .tck           (tck),
-    //     .tms           (tms),
-    //     .tdi           (tdi),
-    //     .tdo           (tdo),
-    //     .trst          (reset_n),
-    //     // verilator lint_off PINCONNECTEMPTY
-    //     // TODO: connect the correct signals
-    //     .pins_in       (),
-    //     .pins_out      (),
-    //     .logic_pins_out(),
-    //     .logic_pins_in (),
-    //     // verilator lint_on PINCONNECTEMPTY
-    //     .active        (JTAGActive),
-    //     .config_data   (JTAGWriteData),
-    //     .config_strobe (JTAGWriteStrobe)
-    // );
-    //
+`ifdef JTAG
+    //JTAG related signals
+    wire [NUM_OF_FABRIC_IOS-1:0] I_out;
+    wire [NUM_OF_FABRIC_IOS-1:0] O_in;
+    wire [                 31:0] JTAGWriteData;
+    wire                         JTAGWriteStrobe;
+    wire                         JTAGActive;
 
+    tap #(
+        .bsregInLen (NUM_OF_FABRIC_IOS),
+        .bsregOutLen(NUM_OF_FABRIC_IOS)
+    ) Inst_jtag (
+        .tck           (tck),
+        .tms           (tms),
+        .tdi           (tdi),
+        .tdo           (tdo),
+        .trst          (efpga_reset_n),
+        .pins_in       (O_in),
+        .pins_out      (I_out),
+        .logic_pins_in (O_in),
+        .logic_pins_out(I_out),
+        .active        (JTAGActive),
+        .config_data   (JTAGWriteData),
+        .config_strobe (JTAGWriteStrobe)
+    );
+`endif
 
+`ifdef JTAG
+    assign efpga_write_data   = JTAGActive ? JTAGWriteData : usb_write_data;
+    assign efpga_write_strobe = JTAGActive ? JTAGWriteStrobe : usb_write_strobe;
+`else
+    assign efpga_write_data   = usb_write_data;
+    assign efpga_write_strobe = usb_write_strobe;
+`endif
 
     eFPGA_top #(
         .NUMBER_OF_ROWS    (NUMBER_OF_ROWS),
@@ -162,8 +172,8 @@ module top #(
 `ifdef DEBUG
         .usb_check_o         (usb_check_o),
 `endif
-        .efpga_write_data_o  (efpga_write_data),
-        .efpga_write_strobe_o(efpga_write_strobe)
+        .efpga_write_data_o  (usb_write_data),
+        .efpga_write_strobe_o(usb_write_strobe)
     );
 
 
