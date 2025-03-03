@@ -43,12 +43,12 @@ module controller #(
     wire                    tx_en;
 
     // Registers for phy signals to decouple the macro
-    reg                     dp_tx_r;
-    reg                     dp_pu_r;
-    reg                     dn_tx_r;
-    reg                     dp_rx_r;
-    reg                     dn_rx_r;
-    reg                     tx_en_r;
+    // reg                     dp_tx_r;
+    // reg                     dp_pu_r;
+    // reg                     dn_tx_r;
+    // reg                     dp_rx_r;
+    // reg                     dn_rx_r;
+    // reg                     tx_en_r;
 
     // CDC signals
     wire [(CHANNELS*8)-1:0] out_data;
@@ -65,13 +65,20 @@ module controller #(
 
 
 
-    assign dn_tx_o = dn_tx_r;
-    assign dp_tx_o = dp_tx_r;
-    assign dp_pu_o = dp_pu_r;
-    assign tx_en_o = tx_en_r;
-    assign dp_rx   = dp_rx_r;
-    assign dn_rx   = dn_rx_r;
+    // assign dn_tx_o = dn_tx_r;
+    // assign dp_tx_o = dp_tx_r;
+    // assign dp_pu_o = dp_pu_r;
+    // assign tx_en_o = tx_en_r;
+    // assign dp_rx   = dp_rx_r;
+    // assign dn_rx   = dn_rx_r;
+    //
 
+    assign dn_tx_o = dn_tx;
+    assign dp_tx_o = dp_tx;
+    assign dp_pu_o = dp_pu;
+    assign tx_en_o = tx_en;
+    assign dp_rx   = dp_rx_i;
+    assign dn_rx   = dn_rx_i;
 
     // TODO: set an actual value
     assign boot_o  = 1'b0;
@@ -82,23 +89,23 @@ module controller #(
 
 
 
-    always @(posedge clk_system_i, negedge reset_n_i) begin
-        if (!reset_n_i) begin
-            dp_tx_r <= 1'b0;
-            dn_tx_r <= 1'b0;
-            dp_pu_r <= 1'b0;
-            dp_rx_r <= 1'b0;
-            dn_rx_r <= 1'b0;
-            tx_en_r <= 1'b0;
-        end else begin
-            dp_tx_r <= dp_tx;
-            dn_tx_r <= dn_tx;
-            dp_pu_r <= dp_pu;
-            dp_rx_r <= dp_rx_i;
-            dn_rx_r <= dn_rx_i;
-            tx_en_r <= tx_en;
-        end
-    end
+    // always @(posedge clk_system_i, negedge reset_n_i) begin
+    //     if (!reset_n_i) begin
+    //         dp_tx_r <= 1'b0;
+    //         dn_tx_r <= 1'b0;
+    //         dp_pu_r <= 1'b0;
+    //         dp_rx_r <= 1'b0;
+    //         dn_rx_r <= 1'b0;
+    //         tx_en_r <= 1'b0;
+    //     end else begin
+    //         dp_tx_r <= dp_tx;
+    //         dn_tx_r <= dn_tx;
+    //         dp_pu_r <= dp_pu;
+    //         dp_rx_r <= dp_rx_i;
+    //         dn_rx_r <= dn_rx_i;
+    //         tx_en_r <= tx_en;
+    //     end
+    // end
 
 `ifdef USB_DFU
 
