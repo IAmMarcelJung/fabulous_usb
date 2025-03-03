@@ -2,6 +2,8 @@
 
 Contains python scripts used for the project.
 
+`upload_bitstream.py`: Upload a bitstream to an emulated FABulous fabric.
+
 `jtag.py`: Used as a wrapper for `ftdi.py` script in the `JTAG-interface`
 submodule. 
 
