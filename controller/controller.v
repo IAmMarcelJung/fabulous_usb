@@ -229,7 +229,7 @@ module controller #(
         .BIT_SAMPLES           (BIT_SAMPLES),
         .USE_APP_CLK           (USE_SYSTEM_CLK),
         .APP_CLK_FREQ          (SYSTEM_CLK_FREQUENCY)
-    ) usb_cdc (
+    ) usb_cdc_inst (
         .clk_i       (clk_usb_i),
         .rstn_i      (reset_n_i),
         .app_clk_i   (clk_system_i),
@@ -252,7 +252,7 @@ module controller #(
         .dn_rx_i     (dn_rx)
     );
 
-    config_usb_cdc config_usb_cdc (
+    config_usb_cdc config_usb_cdc_inst (
         .clk_i              (clk_system_i),
         .reset_n_i          (reset_n_i),
         .in_data_o          (in_data),
