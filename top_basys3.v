@@ -92,6 +92,8 @@ module top_basys3 #(
     pll_48_24_MHz pll_48_24_MHz_int (
         .clk_in1   (clk),         // 100 MHz input clock
         .reset     (reset),       // Reset signal to the clocking wizard
+        .clk_5_MHz (),            // 5 MHz output clock
+        .clk_6_MHz (),            // 6 MHz output clock
         .clk_12_MHz(clk_system),  // 12 MHz output clock
         .clk_24_MHz(),            // 24 MHz output clock
         .clk_48_MHz(clk_usb),     // 48 MHz output clock
