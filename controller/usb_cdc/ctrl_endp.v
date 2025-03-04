@@ -365,7 +365,7 @@ module ctrl_endp #(
     integer i;
     begin
       conf_descr[0+:8*'h09] = {
-        8'h32,  // bMaxPower (100mA)
+        8'hC8,  // bMaxPower (100mA)
         8'h80,  // bmAttributes (bus powered, no remote wakeup)
         8'h00,  // iConfiguration (no string)
         8'h01,  // bConfigurationValue
