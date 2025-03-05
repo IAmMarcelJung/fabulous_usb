@@ -18,3 +18,6 @@ build/
 
 # Ignore directory containing the gate-level netlists
 gl/
+
+# Ignore the pycache
+__pycache__/
