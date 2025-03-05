@@ -9,6 +9,8 @@
 
 from sys import argv
 
+DESYNC_FRAME = [0x00, 0x10, 0x00, 0x00]
+
 binfile = argv[1]
 nbytes = int(argv[2])
 outfile = argv[3]
@@ -23,4 +25,8 @@ with open(outfile, "w") as f:
         if i < len(bindata):
             print(f"{bindata[i]:02x}", file=f)
         else:
-            print("0", file=f)
+            if i < len(bindata) + len(DESYNC_FRAME):
+                byte_counter = i - len(bindata)
+                print(f"{DESYNC_FRAME[byte_counter]:02x}", file=f)
+            else:
+                print("0", file=f)
