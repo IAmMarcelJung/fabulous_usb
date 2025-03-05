@@ -83,7 +83,6 @@ module controller #(
     // TODO: set an actual value
     assign boot_o  = 1'b0;
     assign sck_o   = 1'b0;
-    assign sck_o   = 1'b0;
     assign cs_o    = 1'b0;
     assign pico_o  = 1'b0;
 
