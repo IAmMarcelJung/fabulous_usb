@@ -85,13 +85,12 @@ set_property -dict {PACKAGE_PIN J2 IOSTANDARD LVCMOS33} [get_ports sck_o]
 
 ##Pmod Header JB
 set_property -dict {PACKAGE_PIN A16 IOSTANDARD LVCMOS33} [get_ports Rx]
-#set_property -dict {PACKAGE_PIN A15 IOSTANDARD LVCMOS33} [get_ports tms_i]
+set_property -dict {PACKAGE_PIN B15 IOSTANDARD LVCMOS33} [get_ports {s_data_i}]
+set_property -dict {PACKAGE_PIN B16 IOSTANDARD LVCMOS33} [get_ports {s_clk_i}]
+# set_property -dict {PACKAGE_PIN A15 IOSTANDARD LVCMOS33} [get_ports tms_i]
 #set_property -dict {PACKAGE_PIN A17 IOSTANDARD LVCMOS33} [get_ports tdi_i]
 #set_property -dict {PACKAGE_PIN C15 IOSTANDARD LVCMOS33} [get_ports tdo_o]
 #set_property -dict {PACKAGE_PIN C16 IOSTANDARD LVCMOS33} [get_ports tck_i]
-# set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {user_io[1]}] #Sch name = JB2
-# set_property -dict { PACKAGE_PIN B15   IOSTANDARD LVCMOS33 } [get_ports {user_io[2]}] #Sch name = JB3
-# set_property -dict { PACKAGE_PIN B16   IOSTANDARD LVCMOS33 } [get_ports {user_io[3]}] #Sch name = JB4
 # set_property -dict { PACKAGE_PIN A15   IOSTANDARD LVCMOS33 } [get_ports {user_io[4]}] #Sch name = JB7
 # set_property -dict { PACKAGE_PIN A17   IOSTANDARD LVCMOS33 } [get_ports {user_io[5]}] #Sch name = JB8
 # set_property -dict { PACKAGE_PIN C15   IOSTANDARD LVCMOS33 } [get_ports {user_io[6]}] #Sch name = JB9
@@ -170,7 +169,7 @@ set_property CFGBVS VCCO [current_design]
 ### Timing constraints
 
 set_false_path -to [get_ports {ReceiveLED an heartbeat dp_pu_o dn_io dp_io pico_o sck_o cs_o led_o, tdo_o}]
-set_false_path -from [get_ports {reset user_io Rx dn_io dp_io poci_i clk_select, tms_i, tdi_i, tck_i}]
+set_false_path -from [get_ports {reset user_io Rx dn_io dp_io poci_i clk_select, tms_i, tdi_i, tck_i, s_clk_i, s_data_i}]
 
 set_disable_timing [get_pins -hierarchical *Q_reg*]
 set_disable_timing [get_pins -hierarchical *inferred_i_1__*]

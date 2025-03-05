@@ -13,6 +13,8 @@ module top_basys3 #(
     input  reset,
     input  Rx,
     output ReceiveLED,
+    input  s_clk_i,
+    input  s_data_i,
 
     // JTAG port
 `ifdef JTAG
@@ -108,6 +110,8 @@ module top_basys3 #(
         .reset_n_i   (reset_n),
         .Rx          (Rx),
         .ReceiveLED  (ReceiveLED),
+        .s_clk_i     (s_clk_i),
+        .s_data_i    (s_data_i),
         .I_top       (I_top),
         .O_top       (O_top),
         .T_top       (T_top),

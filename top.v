@@ -18,6 +18,8 @@ module top #(
     input  reset_n_i,
     input  Rx,
     output ReceiveLED,
+    input  s_clk_i,
+    input  s_data_i,
 
     // Fabric IOs
     output [(NUMBER_OF_ROWS * 2)-1:0] I_top,
@@ -142,9 +144,9 @@ module top #(
         //Config related ports
         .SelfWriteStrobe(efpga_write_strobe),
         .SelfWriteData  (efpga_write_data),
+        .s_clk_i        (s_clk_i),
+        .s_data_i       (s_data_i),
         // verilator lint_off PINCONNECTEMPTY
-        .s_clk          (),
-        .s_data         (),
         .ComActive      (),
         // verilator lint_on PINCONNECTEMPTY
         .Rx             (Rx),

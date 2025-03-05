@@ -28,10 +28,8 @@ module eFPGA_top #(
     input         Rx,
     output        ComActive,
     output        ReceiveLED,
-    // verilator lint_off UNUSEDSIGNAL
-    input         s_clk,
-    input         s_data
-    // verilator lint_on UNUSEDSIGNAL
+    input         s_clk_i,
+    input         s_data_i
 );
     //BlockRAM ports
 
@@ -68,6 +66,8 @@ module eFPGA_top #(
         .Rx                  (Rx),
         .ReceiveLED          (ReceiveLED),
         .ComActive           (ComActive),
+        .s_clk_i             (s_clk_i),
+        .s_data_i            (s_data_i),
         .SelfWriteData       (SelfWriteData),
         .SelfWriteStrobe     (SelfWriteStrobe),
         // verilator lint_off PINCONNECTEMPTY
