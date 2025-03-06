@@ -19,11 +19,17 @@ def transmit_bitstream_serial_and_check_response(bitstream, port, baudrate=11520
         # Wait for a 4-byte response
         response = ser.read(4)
         if response == ACK_SEQUENCE:
-            log.logger.success(f"Received expected acknowledgment: {response.hex()}")
+            log.logger.success(
+                f"Received expected acknowledgment: 0x{response.hex().upper()}"
+            )
         elif len(response) == 4:
-            log.logger.error(f"Received unexpected acknowledgment: {response.hex()}")
+            log.logger.error(
+                f"Received unexpected acknowledgment: 0x{response.hex().upper()}"
+            )
+            exit(1)
         else:
             log.logger.error("No acknowledgment received or response incomplete.")
+            exit(1)
 
 
 if __name__ == "__main__":
