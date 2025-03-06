@@ -57,7 +57,7 @@ module config_usb_cdc_tb;
         $dumpfile(`DUMP_FILE);
         $dumpvars(0, `TOP_MODULE);
 `endif
-        in_ready = 1'b0;  // Signal is not used, just set to zero
+        in_ready = 1'b1;  // Data can always be sent from the DUT
         tb_utils_inst.dump_arrays();
 
         tb_utils_inst.load_bitstream("./build/counter.hex");
