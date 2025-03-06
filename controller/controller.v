@@ -1,7 +1,8 @@
 `timescale 1ps / 1ps
 module controller #(
     parameter USE_SYSTEM_CLK       = 1,
-    parameter SYSTEM_CLK_FREQUENCY = 12
+    parameter SYSTEM_CLK_FREQUENCY = 12,
+    parameter MAX_PACKETSIZE       = 8
 ) (
     input  clk_system_i,
     input  reset_n_i,
@@ -182,7 +183,7 @@ module controller #(
         .POLLTIMEOUT  (POLLTIMEOUT),
         .MS20         (MS20),
         .WCID         (WCID),
-        .MAXPACKETSIZE('d8),
+        .MAXPACKETSIZE(MAX_PACKETSIZE),
         .BIT_SAMPLES  (BIT_SAMPLES),
         .USE_APP_CLK  (USE_SYSTEM_CLK),
         .APP_CLK_FREQ (SYSTEM_CLK_FREQUENCY)
@@ -231,8 +232,8 @@ module controller #(
         .VENDORID              (16'h1D50),
         .PRODUCTID             (16'h6130),
         .CHANNELS              (CHANNELS),
-        .IN_BULK_MAXPACKETSIZE ('d8),
-        .OUT_BULK_MAXPACKETSIZE('d8),
+        .IN_BULK_MAXPACKETSIZE (MAX_PACKETSIZE),
+        .OUT_BULK_MAXPACKETSIZE(MAX_PACKETSIZE),
         .BIT_SAMPLES           (BIT_SAMPLES),
         .USE_APP_CLK           (USE_SYSTEM_CLK),
         .APP_CLK_FREQ          (SYSTEM_CLK_FREQUENCY)

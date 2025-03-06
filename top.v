@@ -155,7 +155,8 @@ module top #(
 
     controller #(
         .USE_SYSTEM_CLK      (1),
-        .SYSTEM_CLK_FREQUENCY(FABRIC_CLOCK_FREQUENCY / 1_000_000)
+        .SYSTEM_CLK_FREQUENCY(FABRIC_CLOCK_FREQUENCY / 1_000_000),
+        .MAX_PACKETSIZE      (64)
     ) controller_inst (
         .clk_system_i        (clk_system_i),
         .reset_n_i           (reset_n_i),
