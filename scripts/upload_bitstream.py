@@ -7,7 +7,6 @@ from modules.serial_transmission import (
     transmit_bitstream_serial_and_check_response,
 )
 from modules.bitbang import Bitbang
-from jtag import JTAG, Instruction
 from modules.argument_parser import parse_arguments
 
 
@@ -22,23 +21,23 @@ def read_bitstream(file_path):
     return bitstream
 
 
-def transmit_config_jtag(bitstream):
-    jtag_i = JTAG()
-    log.logger.info("PRELOAD, 00111010")
-    jtag_i.load_and_exec(Instruction.PRELOAD, "00111010")
-    log.logger.info("EXTEST, 00000000")
-    jtag_i.load_and_exec(Instruction.EXTEST, "00000000")
-    log.logger.info("IDCODE")
-    jtag_i.load_and_exec(Instruction.IDCODE, Instruction.IDCODE.name)
-    log.logger.info("INTEST, 11000101")
-    jtag_i.load_and_exec(Instruction.INTEST, "11000101")
-    log.logger.info("BYPASS, 00111010")
-    jtag_i.load_and_exec(Instruction.BYPASS, "00111010")
-
-    jtag_i.load_config(bitstream)
-    log.logger.info("1 sec timer starting now")
-    jtag_i.clock_for(1)
-    log.logger.info("timer ended")
+# def transmit_config_jtag(bitstream):
+#     jtag_i = JTAG()
+#     log.logger.info("PRELOAD, 00111010")
+#     jtag_i.load_and_exec(Instruction.PRELOAD, "00111010")
+#     log.logger.info("EXTEST, 00000000")
+#     jtag_i.load_and_exec(Instruction.EXTEST, "00000000")
+#     log.logger.info("IDCODE")
+#     jtag_i.load_and_exec(Instruction.IDCODE, Instruction.IDCODE.name)
+#     log.logger.info("INTEST, 11000101")
+#     jtag_i.load_and_exec(Instruction.INTEST, "11000101")
+#     log.logger.info("BYPASS, 00111010")
+#     jtag_i.load_and_exec(Instruction.BYPASS, "00111010")
+#
+#     jtag_i.load_config(bitstream)
+#     log.logger.info("1 sec timer starting now")
+#     jtag_i.clock_for(1)
+#     log.logger.info("timer ended")
 
 
 def main():
@@ -81,7 +80,12 @@ def main():
             finally:
                 bitbang.close()
         case "JTAG":
-            transmit_config_jtag(bitstream)
+            # import this locally so since this requires the correct FTDI
+            # adapter
+            from jtag import JTAG
+
+            jtag = JTAG()
+            jtag.load_config(list(bitstream))
         case _:
             log.logger.error(f"Protocl {args.protocol} is unknown")
 
