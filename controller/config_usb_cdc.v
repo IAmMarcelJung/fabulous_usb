@@ -22,7 +22,7 @@ module config_usb_cdc (
 
     localparam DESYNC_FLAG_POS = 20;
     localparam [31:0] DESYNC_FRAME = 1 << DESYNC_FLAG_POS;
-    localparam [31:0] FINISH_FLAG = 32'hFAB0_FABF;
+    localparam [31:0] DONE_FRAME = 32'hFAB0_FABF;
     localparam STATE_IDLE = 0;
     localparam STATE_BYTE_0 = 1;
     localparam STATE_BYTE_1 = 2;
@@ -88,19 +88,19 @@ module config_usb_cdc (
             case (ack_state)
                 STATE_BYTE_3: begin
                     in_valid_next = 1'b1;
-                    in_data_next  = FINISH_FLAG[24+:8];
+                    in_data_next  = DONE_FRAME[24+:8];
                 end
                 STATE_BYTE_2: begin
                     in_valid_next = 1'b1;
-                    in_data_next  = FINISH_FLAG[16+:8];
+                    in_data_next  = DONE_FRAME[16+:8];
                 end
                 STATE_BYTE_1: begin
                     in_valid_next = 1'b1;
-                    in_data_next  = FINISH_FLAG[8+:8];
+                    in_data_next  = DONE_FRAME[8+:8];
                 end
                 STATE_BYTE_0: begin
                     in_valid_next = 1'b1;
-                    in_data_next  = FINISH_FLAG[0+:8];
+                    in_data_next  = DONE_FRAME[0+:8];
                 end
                 // All wait states
                 default: begin
