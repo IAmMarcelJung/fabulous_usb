@@ -21,25 +21,6 @@ def read_bitstream(file_path):
     return bitstream
 
 
-# def transmit_config_jtag(bitstream):
-#     jtag_i = JTAG()
-#     log.logger.info("PRELOAD, 00111010")
-#     jtag_i.load_and_exec(Instruction.PRELOAD, "00111010")
-#     log.logger.info("EXTEST, 00000000")
-#     jtag_i.load_and_exec(Instruction.EXTEST, "00000000")
-#     log.logger.info("IDCODE")
-#     jtag_i.load_and_exec(Instruction.IDCODE, Instruction.IDCODE.name)
-#     log.logger.info("INTEST, 11000101")
-#     jtag_i.load_and_exec(Instruction.INTEST, "11000101")
-#     log.logger.info("BYPASS, 00111010")
-#     jtag_i.load_and_exec(Instruction.BYPASS, "00111010")
-#
-#     jtag_i.load_config(bitstream)
-#     log.logger.info("1 sec timer starting now")
-#     jtag_i.clock_for(1)
-#     log.logger.info("timer ended")
-
-
 def main():
     args = parse_arguments()
     bitstream = read_bitstream(args.file)
