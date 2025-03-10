@@ -3,8 +3,7 @@ import socket
 import serial
 import modules.log as log
 
-
-# Constants
+# Configuration Constants
 HOST = "127.0.0.1"
 PORT = 4567
 SERIAL_PORT = "/dev/ttyACM0"
@@ -12,71 +11,126 @@ BAUDRATE = 115200
 TIMEOUT = 0.1
 
 
-def setup_serial():
-    """Initialize and return a USB CDC serial connection."""
-    return serial.Serial(SERIAL_PORT, BAUDRATE, timeout=TIMEOUT)
+class JTAGServer:
+    """TCP Server that forwards OpenOCD bitbang commands to a USB CDC serial JTAG bridge."""
 
+    def __init__(
+        self,
+        host=HOST,
+        port=PORT,
+        serial_port=SERIAL_PORT,
+        baudrate=BAUDRATE,
+        timeout=TIMEOUT,
+    ):
+        self.host = host
+        self.port = port
+        self.serial_port = serial_port
+        self.baudrate = baudrate
+        self.timeout = timeout
+        self.ser = None
+        self.sock = None
 
-def setup_server():
-    """Initialize and return a TCP server socket."""
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.bind((HOST, PORT))
-    sock.listen(1)
-    print(f"Listening on {HOST}:{PORT} for OpenOCD bitbang connections...")
-    return sock
-
-
-def handle_bitbang_command(ser, cmd):
-    """Send ASCII command directly as bytes to the JTAG bridge."""
-    ser.write(cmd.encode())  # Send ASCII as a byte
-    if cmd == "R":  # Only read when TDO is requested
-        return ser.read(1)
-    return b""
-
-
-def handle_client(conn, ser):
-    """Process commands from an OpenOCD client over TCP."""
-    try:
-        while True:
-            data = conn.recv(1024)  # Read up to 1024 bytes
-            if not data:
-                log.logger.warning("Client disconnected.")
-                break  # Exit loop and wait for a new client
-
-            log.logger.info(f"Received {data}")
-            response = b"".join(
-                [handle_bitbang_command(ser, chr(byte)) for byte in data]
+    def setup_serial(self):
+        """Initialize USB CDC serial connection."""
+        try:
+            self.ser = serial.Serial(
+                self.serial_port, self.baudrate, timeout=self.timeout
             )
-            if response:
-                log.logger.info(f"Sending {response}")
-                conn.sendall(response)
+            log.logger.info(
+                f"Connected to serial port {self.serial_port} at {self.baudrate} baud."
+            )
+        except serial.SerialException as e:
+            log.logger.error(f"Failed to open serial port: {e}")
+            raise
 
-    except ConnectionResetError:
-        log.logger.warning("Client forcefully disconnected.")
-    finally:
-        conn.close()
+    def setup_server(self):
+        """Initialize TCP server socket."""
+        try:
+            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            self.sock.bind((self.host, self.port))
+            self.sock.listen(1)
+            log.logger.info(
+                f"Listening on {self.host}:{self.port} for OpenOCD bitbang connections..."
+            )
+        except socket.error as e:
+            log.logger.error(f"Failed to set up server: {e}")
+            raise
 
+    def handle_bitbang_command(self, cmd):
+        """Process and send an ASCII command to the JTAG bridge."""
+        ascii_byte = cmd.encode()
+        log.logger.debug(
+            f"Sending '{cmd}' (byte: {int.from_bytes(ascii_byte, 'big'):08b})"
+        )
 
-def main():
-    """Main function to start the server and manage connections."""
-    log.setup_logger(0)
-    ser = setup_serial()
-    sock = setup_server()
+        try:
+            self.ser.write(ascii_byte)  # Send command over serial
+        except serial.SerialException as e:
+            log.logger.error(f"Error writing to serial: {e}")
+            return b""
 
-    try:
-        while True:
-            print("Waiting for a new connection...")
-            conn, addr = sock.accept()
-            print(f"Connected to OpenOCD: {addr}")
-            handle_client(conn, ser)  # Handle client interaction
+        if cmd == "R":  # Only read when TDO is requested
+            return self.ser.read(1)
+        return b""
 
-    except KeyboardInterrupt:
-        print("\nServer shutting down...")
+    def handle_client(self, conn):
+        """Process commands from an OpenOCD client over TCP."""
+        try:
+            while True:
+                data = conn.recv(1024)  # Read up to 1024 bytes
+                if not data:
+                    log.logger.warning("Client disconnected.")
+                    break  # Exit loop
 
-    finally:
-        sock.close()
-        ser.close()
+                log.logger.info(f"Received: {data}")
+                response = b"".join(
+                    [self.handle_bitbang_command(chr(byte)) for byte in data]
+                )
+
+                if response:
+                    log.logger.info(f"Sending: {response}")
+                    conn.sendall(response)
+
+                if (
+                    b"Q" in data
+                ):  # If "Q" is received, close connection but keep server running
+                    log.logger.info("Received 'Q' - Closing current client connection.")
+                    break
+
+        except ConnectionResetError:
+            log.logger.warning("Client forcefully disconnected.")
+        finally:
+            conn.close()
+
+    def start(self):
+        """Start the JTAG server."""
+        log.setup_logger(0)
+        self.setup_serial()
+        self.setup_server()
+
+        try:
+            while True:
+                log.logger.info("Waiting for a new connection...")
+                conn, addr = self.sock.accept()
+                log.logger.info(f"Connected to client at: {addr}")
+                self.handle_client(conn)
+
+        except KeyboardInterrupt:
+            log.logger.info("\nServer shutting down due to keyboard interrupt.")
+
+        finally:
+            self.cleanup()
+
+    def cleanup(self):
+        """Cleanup resources on shutdown."""
+        log.logger.info("Closing server and serial connection...")
+        if self.sock:
+            self.sock.close()
+        if self.ser:
+            self.ser.close()
+        log.logger.info("Server stopped cleanly.")
 
 
 if __name__ == "__main__":
-    main()
+    server = JTAGServer()
+    server.start()
