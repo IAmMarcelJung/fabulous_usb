@@ -44,7 +44,8 @@ module top_basys3 #(
     localparam LED_LAST_IO = LED_FIRST_IO + NUM_USED_LEDS - 1;
 
     // DFU related parameters
-    localparam CHANNELS = 'd1;
+    localparam CHANNELS = 'd3
+        ;  // Channel 1: eFPGA Config, CHANNEL 2: eFPGA Manta Logic Analyzer, Channel 3: Ibex JTAG
     localparam BIT_SAMPLES = 'd4;
     localparam TRANSFER_SIZE = 'd256;
     localparam POLLTIMEOUT = 'd10;  // ms
