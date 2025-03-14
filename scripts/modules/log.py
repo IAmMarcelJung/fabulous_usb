@@ -9,18 +9,24 @@ def setup_logger(verbosity: int):
     logger.level("INFO", color="<white>")
 
     # Define logger format
-    if verbosity >= 1:
+    if verbosity >= 2:
         log_format = (
             "[<level>{level:}</level>]: "
             "<cyan>[{time:DD-MM-YYYY HH:mm:ss]}</cyan> | "
             "<green>[{name}</green>:<green>{function}</green>:<green>{line}]</green> - "
             "<level>{message}</level>"
         )
+        level = "DEBUG"
+    elif verbosity == 1:
+        log_format = "[<level>{level:}</level>]: " "<level>{message}</level>"
+        level = "DEBUG"
+
     else:
         log_format = "[<level>{level:}</level>]: " "<level>{message}</level>"
+        level = "INFO"
 
     # Add logger to write logs to stdout
-    logger.add(sys.stdout, format=log_format, level="DEBUG", colorize=True)
+    logger.add(sys.stdout, format=log_format, level=level, colorize=True)
 
 
 def display_footer(start_time, total_bytes):
