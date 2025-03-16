@@ -69,23 +69,36 @@ class JTAGServer:
             log.logger.error(f"Error writing to serial: {e}")
             return b""
 
-        if cmd == "R":  # Only read when TDO is requested
-            return self.ser.read(1)
+            try:
+                if not self.ser.is_open:
+                    self.ser.open()
+                self.ser.write(ascii_byte)  # Send command over serial
+            except serial.SerialException as e:
+                log.logger.error(f"Error writing to serial: {e}")
+                return b""
+
+            if cmd == "R":  # Only read when TDO is requested
+                tdo = self.ser.read(1)
+                log.logger.debug(f"Read tdo data {tdo.decode("utf-8")} from device.")
+                return tdo
+
+            if self.ser.is_open:
+                self.ser.close()
         return b""
 
     def handle_client(self, conn):
         """Process commands from an OpenOCD client over TCP."""
         try:
             while True:
-                data = conn.recv(1024)  # Read up to 1024 bytes
+                # Always receive one byte at a time
+                data = conn.recv(1)
                 if not data:
                     log.logger.warning("Client disconnected.")
                     break  # Exit loop
 
-                log.logger.info(f"Received: {data}")
-                response = b"".join(
-                    [self.handle_bitbang_command(chr(byte)) for byte in data]
-                )
+                log.logger.debug(f"Received {data.decode("utf-8")} from the client")
+
+                response = self.handle_bitbang_command(chr(data[0])) # data will just be one byte
 
                 if response:
                     log.logger.info(f"Sending: {response}")
