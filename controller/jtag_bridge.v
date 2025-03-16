@@ -35,14 +35,6 @@ module jtag_bridge (
                 "B": blink_led <= 1;  // Blink ON
                 "b": blink_led <= 0;  // Blink OFF
 
-                // "R": begin
-                //     // Read TDO
-                //     if (usb_out_ready_i) begin
-                //         usb_out       <= tdo ? "1" : "0";
-                //
-                //         usb_out_valid <= 1;
-                //     end
-                // end
                 "R": begin
                     if (usb_out_ready_i) begin
                         usb_out       <= captured_tdo ? "1" : "0";  // Use synchronized TDO
@@ -76,35 +68,4 @@ module jtag_bridge (
             endcase
         end
     end
-
-    reg [1:0] tdo_sync;
-    always @(posedge clk or negedge rst_n_i) begin
-        if (!rst_n_i) begin
-            tdo_sync <= 2'b0;
-        end else begin
-            tdo_sync <= {tdo_sync[1], tdo};
-        end
-    end
-
-    // TCK edge detection
-    reg [2:0] tck_sync;
-    always @(posedge clk or negedge rst_n_i) begin
-        if (!rst_n_i) begin
-            tck_sync <= 3'b000;
-        end else begin
-            tck_sync <= {tck_sync[1], tck_sync[0], tck};  // Shift and assign in one line
-        end
-    end
-
-    wire tck_rising = (tck_sync[1] && !tck_sync[2]);  // Detect rising edge
-
-    reg  captured_tdo;
-    always @(posedge clk or negedge rst_n_i) begin
-        if (!rst_n_i) begin
-            captured_tdo <= 0;
-        end else if (tck_rising) begin
-            captured_tdo <= tdo_sync[1];  // Capture TDO after synchronization
-        end
-    end
-
 endmodule
