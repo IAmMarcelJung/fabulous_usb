@@ -2,13 +2,12 @@
 import socket
 import serial
 import modules.log as log
+from modules.argument_parser import parse_bridge_arguments
 
-# Configuration Constants
+# Configuration defaults, can be overridden by command line arguments
 HOST = "127.0.0.1"
 PORT = 4567
-SERIAL_PORT = "/dev/ttyACM0"
-BAUDRATE = 115200
-TIMEOUT = 0.1
+SERIAL_PORT = "/dev/ttyACM2"
 
 
 class JTAGServer:
@@ -18,15 +17,11 @@ class JTAGServer:
         self,
         host=HOST,
         port=PORT,
-        serial_port=SERIAL_PORT,
-        baudrate=BAUDRATE,
-        timeout=TIMEOUT,
+        serial_port=SERIAL_PORT
     ):
         self.host = host
         self.port = port
         self.serial_port = serial_port
-        self.baudrate = baudrate
-        self.timeout = timeout
         self.ser = None
         self.sock = None
 
@@ -34,10 +29,10 @@ class JTAGServer:
         """Initialize USB CDC serial connection."""
         try:
             self.ser = serial.Serial(
-                self.serial_port, self.baudrate, timeout=self.timeout
+                self.serial_port, timeout=5,baudrate=115200
             )
             log.logger.info(
-                f"Connected to serial port {self.serial_port} at {self.baudrate} baud."
+                f"Connected to serial port {self.serial_port}."
             )
         except serial.SerialException as e:
             log.logger.error(f"Failed to open serial port: {e}")
@@ -58,16 +53,13 @@ class JTAGServer:
 
     def handle_bitbang_command(self, cmd):
         """Process and send an ASCII command to the JTAG bridge."""
-        ascii_byte = cmd.encode()
-        log.logger.debug(
-            f"Sending '{cmd}' (byte: {int.from_bytes(ascii_byte, 'big'):08b})"
-        )
 
-        try:
-            self.ser.write(ascii_byte)  # Send command over serial
-        except serial.SerialException as e:
-            log.logger.error(f"Error writing to serial: {e}")
-            return b""
+        # Don't do anything if a quit request was received
+        if cmd != "Q":
+            ascii_byte = cmd.encode()
+            log.logger.debug(
+                f"Sending {cmd} to the device"
+            )
 
             try:
                 if not self.ser.is_open:
@@ -101,7 +93,7 @@ class JTAGServer:
                 response = self.handle_bitbang_command(chr(data[0])) # data will just be one byte
 
                 if response:
-                    log.logger.info(f"Sending: {response}")
+                    log.logger.debug(f"Sending {response.decode("utf-8")} to the client")
                     conn.sendall(response)
 
                 if (
@@ -117,7 +109,6 @@ class JTAGServer:
 
     def start(self):
         """Start the JTAG server."""
-        log.setup_logger(0)
         self.setup_serial()
         self.setup_server()
 
@@ -145,5 +136,7 @@ class JTAGServer:
 
 
 if __name__ == "__main__":
-    server = JTAGServer()
+    args = parse_bridge_arguments()
+    log.setup_logger(args.verbose)
+    server = JTAGServer(args.address, args.port, args.acm_port)
     server.start()
