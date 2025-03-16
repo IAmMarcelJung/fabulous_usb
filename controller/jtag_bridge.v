@@ -1,69 +1,68 @@
 module jtag_bridge (
-    input  wire       clk,
+    input  wire       clk_i,
     input  wire       rst_n_i,
-    input  wire [7:0] usb_data,
-    input  wire       usb_valid,
-    output reg        usb_data_ready_o,
-    output reg        tck,
-    output reg        tms,
-    output reg        tdi,
-    output reg        trst,
-    output reg        srst,
-    input  wire       tdo,
-    output wire       captured_tdo,
-    output reg  [7:0] usb_out,
-    output reg        usb_out_valid,
-    input  wire       usb_out_ready_i,
-    output reg        blink_led
+    input  wire [7:0] from_usb_data_i,
+    input  wire       from_usb_valid_i,
+    output reg        from_usb_ready_o,
+    output reg        tck_o,
+    output reg        tms_o,
+    output reg        tdi_o,
+    output reg        trst_o,
+    output reg        srst_o,
+    input  wire       tdo_i,
+    output reg  [7:0] to_usb_data_o,
+    output reg        to_usb_valid_o,
+    input  wire       to_usb_ready_i,
+    output reg        bitbang_led_o
 );
 
-    always @(posedge clk or negedge rst_n_i) begin
+    always @(posedge clk_i or negedge rst_n_i) begin
         if (!rst_n_i) begin
-            tck              <= 0;
-            tms              <= 0;
-            tdi              <= 0;
-            trst             <= 0;
-            srst             <= 1'b0;
-            blink_led        <= 0;
-            usb_out_valid    <= 0;
-            usb_out          <= 8'b0;
-            usb_data_ready_o <= 1'b0;
-        end else if (usb_valid) begin
-            usb_out_valid    <= 0;
-            usb_data_ready_o <= 1'b1;
-            case (usb_data)
-                "B": blink_led <= 1;  // Blink ON
-                "b": blink_led <= 0;  // Blink OFF
+            tck_o            <= 1'b0;
+            tms_o            <= 1'b0;
+            tdi_o            <= 1'b0;
+            trst_o           <= 1'b0;
+            srst_o           <= 1'b0;
+            bitbang_led_o    <= 1'b0;
+            to_usb_valid_o   <= 1'b0;
+            to_usb_data_o    <= 8'b0;
+            from_usb_ready_o <= 1'b0;
+        end else if (from_usb_valid_i) begin
+            to_usb_valid_o   <= 1'b0;
+            from_usb_ready_o <= 1'b1;
+            case (from_usb_data_i)
+                "B": bitbang_led_o <= 1'b1;  // Blink ON
+                "b": bitbang_led_o <= 1'b0;  // Blink OFF
 
                 "R": begin
-                    if (usb_out_ready_i) begin
-                        usb_out       <= captured_tdo ? "1" : "0";  // Use synchronized TDO
-                        usb_out_valid <= 1;
+                    if (to_usb_ready_i) begin
+                        to_usb_data_o  <= tdo_i ? "1" : "0";
+                        to_usb_valid_o <= 1'b1;
                     end
                 end
 
-                "0": {tck, tms, tdi} <= 3'b000;  // Write 0 0 0
-                "1": {tck, tms, tdi} <= 3'b001;  // Write 0 0 1
-                "2": {tck, tms, tdi} <= 3'b010;  // Write 0 1 0
-                "3": {tck, tms, tdi} <= 3'b011;  // Write 0 1 1
-                "4": {tck, tms, tdi} <= 3'b100;  // Write 1 0 0
-                "5": {tck, tms, tdi} <= 3'b101;  // Write 1 0 1
-                "6": {tck, tms, tdi} <= 3'b110;  // Write 1 1 0
-                "7": {tck, tms, tdi} <= 3'b111;  // Write 1 1 1
-                "r": {trst, srst} <= 2'b00;  // Reset 0 0
-                "s": {trst, srst} <= 2'b01;  // Reset 0 1
-                "t": {trst, srst} <= 2'b10;  // Reset 1 0
-                "u": {trst, srst} <= 2'b11;  // Reset 1 1
+                "0": {tck_o, tms_o, tdi_o} <= 3'b000;
+                "1": {tck_o, tms_o, tdi_o} <= 3'b001;
+                "2": {tck_o, tms_o, tdi_o} <= 3'b010;
+                "3": {tck_o, tms_o, tdi_o} <= 3'b011;
+                "4": {tck_o, tms_o, tdi_o} <= 3'b100;
+                "5": {tck_o, tms_o, tdi_o} <= 3'b101;
+                "6": {tck_o, tms_o, tdi_o} <= 3'b110;
+                "7": {tck_o, tms_o, tdi_o} <= 3'b111;
+                "r": {trst_o, srst_o} <= 2'b00;
+                "s": {trst_o, srst_o} <= 2'b01;
+                "t": {trst_o, srst_o} <= 2'b10;
+                "u": {trst_o, srst_o} <= 2'b11;
                 default: begin
-                    tck              <= tck;
-                    tms              <= tms;
-                    tdi              <= tdi;
-                    trst             <= trst;
-                    srst             <= srst;
-                    blink_led        <= blink_led;
-                    usb_out          <= 8'b0;
-                    usb_out_valid    <= 0;
-                    usb_data_ready_o <= 1'b1;
+                    tck_o            <= tck_o;
+                    tms_o            <= tms_o;
+                    tdi_o            <= tdi_o;
+                    trst_o           <= trst_o;
+                    srst_o           <= srst_o;
+                    bitbang_led_o    <= bitbang_led_o;
+                    to_usb_data_o    <= to_usb_data_o;
+                    to_usb_valid_o   <= 1'b0;
+                    from_usb_ready_o <= 1'b1;
                 end
             endcase
         end
