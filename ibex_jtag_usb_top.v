@@ -1,14 +1,13 @@
-module top_basys3 #(
+module ibex_jtag_usb_top #(
     parameter SRAMInitFile = ""
 ) (
-    // These inputs are defined in data/pins_basys3.xdc
     input             clk,
     input             IO_RST,
     input       [3:0] sw,
     input       [3:0] btn,
-    output      [7:0] led,
-    // input UART_RX,
-    // output UART_TX,
+    output      [3:0] led,
+    input             uart_rx,
+    output            uart_tx,
     output      [3:0] an,
     output            configured,
     // Only used for debugging
@@ -16,14 +15,16 @@ module top_basys3 #(
     output            tdi_o,
     output            tdo_o,
     output            tck_o,
-    output            captured_tdo,
     output            jtag_led,
-    inout  wire       dp_io,         // USB D+
-    inout  wire       dn_io,         //USB D-
+    inout  wire       dp_io,       // USB D+
+    inout  wire       dn_io,       // USB D-
     output wire       dp_pu_o
 );
 
-    localparam CHANNELS = 32'd2;
+    localparam CHANNELS = 32'd3;
+    localparam EFPGA = 0, MANTA = 1, JTAG = 2;
+    localparam JTAG_LSB = JTAG * 8;
+    localparam JTAG_MSB = JTAG * 8 + 7;
     localparam BIT_SAMPLES = 'd4;
     wire clk_system, clk_usb;
     wire tck, tms, tdi, tdo, trst, srst;
@@ -102,7 +103,7 @@ module top_basys3 #(
         .OUT_BULK_MAXPACKETSIZE('d64),
         .USE_APP_CLK           ('b1),
         .BIT_SAMPLES           (BIT_SAMPLES)
-    ) usb_cdc (
+    ) usb_cdc_inst (
         .clk_i       (clk_usb),
         .rstn_i      (rst_n),
         .app_clk_i   (clk_system),
@@ -123,26 +124,24 @@ module top_basys3 #(
     );
 
     jtag_bridge jtag_bridge_inst (
-        .clk             (clk_system),
+        .clk_i           (clk_system),
         .rst_n_i         (rst_n),
-        .usb_data        (out_data),
-        .usb_valid       (out_valid),
-        .usb_data_ready_o(out_ready),
-        .tck             (tck),
-        .tms             (tms),
-        .tdi             (tdi),
-        .tdo             (tdo),
-        .captured_tdo    (captured_tdo),
-        .trst            (trst),
-        .srst            (srst),
-        .usb_out         (in_data),
-        .usb_out_valid   (in_valid),
-        .usb_out_ready_i (in_ready),
-        .blink_led       (jtag_led)
+        .from_usb_data_i (out_data[JTAG_MSB:JTAG_LSB]),
+        .from_usb_valid_i(out_valid[JTAG]),
+        .from_usb_ready_o(out_ready[JTAG]),
+        .tck_o           (tck),
+        .tms_o           (tms),
+        .tdi_o           (tdi),
+        .tdo_i           (tdo),
+        .trst_o          (trst),
+        .srst_o          (srst),
+        .to_usb_data_o   (in_data[JTAG_MSB:JTAG_LSB]),
+        .to_usb_valid_o  (in_valid[JTAG]),
+        .to_usb_ready_i  (in_ready[JTAG]),
+        .bitbang_led_o   (jtag_led)
     );
 
-    assign rst_n = !IO_RST & locked;
-    // assign io_rst_n = !IO_RST & locked & !srst;
+    assign rst_n = !IO_RST & locked & !srst;
     // Turn off the 7-segment display
     assign an    = 4'b1111;
 
