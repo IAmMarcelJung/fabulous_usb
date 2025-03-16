@@ -83,7 +83,7 @@ set_property -dict { PACKAGE_PIN A14   IOSTANDARD LVCMOS33 } [get_ports {tck_o}]
 set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {tms_o}]
 set_property -dict { PACKAGE_PIN B15   IOSTANDARD LVCMOS33 } [get_ports {tdi_o}]
 set_property -dict { PACKAGE_PIN B16   IOSTANDARD LVCMOS33 } [get_ports {tdo_o}]
-set_property -dict { PACKAGE_PIN A15   IOSTANDARD LVCMOS33 } [get_ports {captured_tdo_o}]
+# set_property -dict { PACKAGE_PIN A15   IOSTANDARD LVCMOS33 } [get_ports {captured_tdo_o}]
 # set_property -dict { PACKAGE_PIN A17   IOSTANDARD LVCMOS33 } [get_ports {tck_rising_o}]
 #set_property -dict { PACKAGE_PIN C15   IOSTANDARD LVCMOS33 } [get_ports {JB[6]}];#Sch name = JB9
 #set_property -dict { PACKAGE_PIN C16   IOSTANDARD LVCMOS33 } [get_ports {JB[7]}];#Sch name = JB10
