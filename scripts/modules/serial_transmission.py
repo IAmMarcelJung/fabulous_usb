@@ -2,7 +2,6 @@ import serial
 from modules import log
 
 # Define special 4-byte acknowledgment sequence
-# ACK_SEQUENCE = b"\xde\xad\xbe\xef"
 ACK_SEQUENCE = b"\xfa\xb0\xfa\xbf"
 
 
