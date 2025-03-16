@@ -1,20 +1,19 @@
 # Use the remote_bitbang driver to communicate over TCP
 adapter driver remote_bitbang
+transport select jtag
+
 remote_bitbang host 127.0.0.1
 remote_bitbang port 4567
 
+reset_config none
+
 # Define the JTAG TAP and expected device ID
 set _CHIPNAME riscv
-set _EXPECTED_ID 0x110001CDF  ;# Ibex on Arty A7-35T (or use correct ID)
+set _EXPECTED_ID 0x11001CDF
 
-jtag newtap $_CHIPNAME cpu -irlen 6 -expected-id $_EXPECTED_ID -ignore-version
+jtag newtap $_CHIPNAME cpu -irlen 5 -expected-id $_EXPECTED_ID
 set _TARGETNAME $_CHIPNAME.cpu
 target create $_TARGETNAME riscv -chain-position $_TARGETNAME
-
-# Define debug module interface
-riscv set_ir idcode 0x09
-riscv set_ir dtmcs 0x22
-riscv set_ir dmi 0x23
 
 # OpenOCD settings
 riscv set_mem_access sysbus
