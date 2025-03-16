@@ -32,7 +32,8 @@ module controller #(
     output        efpga_write_strobe_o
 );
     // USB related definitions
-    localparam CHANNELS = 'd1;
+    localparam EFPGA = 1, MANTA = 2, JTAG = 3;
+    localparam CHANNELS = 'd3;
     localparam BIT_SAMPLES = 'd4;
 
     // PHY signals
