@@ -33,35 +33,6 @@ module top_basys3 #(
     assign tdi_o = tdi;
     assign tdo_o = tdo;
 
-    // Instantiating the Ibex Demo System.
-    // ibex_demo_system #(
-    // .GpiWidth(8),
-    // .GpoWidth(8),
-    // .PwmWidth(12),
-    // .SRAMInitFile(SRAMInitFile)
-    // ) u_ibex_demo_system (
-    ibex_demo_system u_ibex_demo_system (
-        //input
-        .clk_sys_i (clk_system),
-        .rst_sys_ni(rst_n),
-        .gp_i      ({sw, btn}),
-        // .uart_rx_i(UART_RX),
-
-        //output
-        .gp_o ({led[7:4], 4'b0}),
-        .pwm_o(),
-        // .uart_tx_o(UART_TX),
-
-        .spi_rx_i (),
-        .spi_tx_o (),
-        .spi_sck_o(),
-
-        .trst_ni(!trst),
-        .tms_i  (tms),
-        .tck_i  (tck),
-        .td_i   (tdi),
-        .td_o   (tdo)
-    );
 
     wire [8*CHANNELS-1:0] out_data;
     wire [8*CHANNELS-1:0] in_data;
@@ -85,6 +56,29 @@ module top_basys3 #(
     wire                  locked;
     wire                  clk_48_MHz;
     wire                  clk_12_MHz;
+
+    ibex_demo_wrapper ibex_demo_wrapper_inst (
+        //input
+        .clk_sys_i (clk_system),
+        .rst_sys_ni(rst_n),
+        .gp_i      ({sw, btn}),
+        .uart_rx_i (uart_rx),
+
+        //output
+        .gp_o     (led),
+        .pwm_o    (),
+        .uart_tx_o(uart_tx),
+
+        .spi_rx_i (),
+        .spi_tx_o (),
+        .spi_sck_o(),
+
+        .trst_ni(!trst),
+        .tms_i  (tms),
+        .tck_i  (tck),
+        .td_i   (tdi),
+        .td_o   (tdo)
+    );
 
     assign dn_io   = tx_en ? dn_tx : 1'bz;
     assign dp_io   = tx_en ? dp_tx : 1'bz;
