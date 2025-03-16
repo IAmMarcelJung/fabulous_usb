@@ -32,8 +32,8 @@ def setup_logger(verbosity: int):
 def display_footer(start_time, total_bytes):
     end_time = time.time()
     total_time = end_time - start_time
-    logger.info(f"Transmitted {total_bytes} bytes in {total_time:.4f} seconds")
-    logger.info(
+    logger.debug(f"Transmitted {total_bytes} bytes in {total_time:.4f} seconds")
+    logger.debug(
         f"Approximate transmission rate: {total_bytes/total_time:.2f} bytes/second"
     )
 
