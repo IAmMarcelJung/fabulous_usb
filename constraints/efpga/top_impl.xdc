@@ -177,20 +177,6 @@ set_disable_timing [get_pins -filter {REF_PIN_NAME =~ "*BEG*"} -of_objects [get_
 
 # Ignore timing between usb and system clock
 # Vivado recommended this setting for getting the clocks in the methodology report
-# NOTE: 24 MHz is too fast for user design running on the emulated FABulous
-# fabric
-set_false_path -from [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT1]] -to [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT0]]
-set_false_path -from [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT0]] -to [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT1]]
 
-# 12 MHz
-set_false_path -from [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT2]] -to [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT0]]
-set_false_path -from [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT0]] -to [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT2]]
-
-# 6 MHz
-set_false_path -from [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT3]] -to [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT0]]
-set_false_path -from [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT0]] -to [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT3]]
-
-# 5 MHz
-set_false_path -from [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT4]] -to [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT0]]
-set_false_path -from [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT0]] -to [get_clocks -of_objects [get_pins pll_48_24_MHz_int/inst/mmcm_adv_inst/CLKOUT4]]
-
+set_false_path -from [get_clocks -of_objects [get_pins pll_48_12_MHz_inst/inst/mmcm_adv_inst/CLKOUT1]] -to [get_clocks -of_objects [get_pins pll_48_12_MHz_inst/inst/mmcm_adv_inst/CLKOUT0]]
+set_false_path -from [get_clocks -of_objects [get_pins pll_48_12_MHz_inst/inst/mmcm_adv_inst/CLKOUT0]] -to [get_clocks -of_objects [get_pins pll_48_12_MHz_inst/inst/mmcm_adv_inst/CLKOUT1]]
