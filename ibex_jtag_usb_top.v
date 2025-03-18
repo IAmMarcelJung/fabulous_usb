@@ -141,7 +141,8 @@ module ibex_jtag_usb_top #(
         .bitbang_led_o   (jtag_led)
     );
 
-    assign rst_n = !IO_RST & locked & !srst;
+    // assign rst_n = !IO_RST & locked & !srst;
+    assign rst_n = !IO_RST & locked;
     // Turn off the 7-segment display
     assign an    = 4'b1111;
 
