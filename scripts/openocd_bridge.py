@@ -57,13 +57,9 @@ class JTAGServer:
         # Don't do anything if a quit request was received
         if cmd != "Q":
             ascii_byte = cmd.encode()
-            log.logger.debug(
-                f"Sending {cmd} to the device"
-            )
+            log.logger.debug(f"Sending {cmd} to the device")
 
             try:
-                if not self.ser.is_open:
-                    self.ser.open()
                 self.ser.write(ascii_byte)  # Send command over serial
             except serial.SerialException as e:
                 log.logger.error(f"Error writing to serial: {e}")
@@ -71,11 +67,10 @@ class JTAGServer:
 
             if cmd == "R":  # Only read when TDO is requested
                 tdo = self.ser.read(1)
+                self.ser.reset_input_buffer()
                 log.logger.debug(f"Read tdo data {tdo.decode("utf-8")} from device.")
                 return tdo
 
-            if self.ser.is_open:
-                self.ser.close()
         return b""
 
     def handle_client(self, conn):
