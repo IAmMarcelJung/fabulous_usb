@@ -57,6 +57,7 @@ class JTAGServer:
                 return b""
 
             if cmd == "R":  # Only read when TDO is requested
+                self.ser.reset_input_buffer()
                 tdo = self.ser.read(1)
                 self.ser.reset_input_buffer()
                 log.logger.debug(f"Read tdo data {tdo.decode("utf-8")} from device.")
