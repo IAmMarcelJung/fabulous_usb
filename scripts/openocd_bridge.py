@@ -13,12 +13,7 @@ SERIAL_PORT = "/dev/ttyACM2"
 class JTAGServer:
     """TCP Server that forwards OpenOCD bitbang commands to a USB CDC serial JTAG bridge."""
 
-    def __init__(
-        self,
-        host=HOST,
-        port=PORT,
-        serial_port=SERIAL_PORT
-    ):
+    def __init__(self, host=HOST, port=PORT, serial_port=SERIAL_PORT):
         self.host = host
         self.port = port
         self.serial_port = serial_port
@@ -28,12 +23,8 @@ class JTAGServer:
     def setup_serial(self):
         """Initialize USB CDC serial connection."""
         try:
-            self.ser = serial.Serial(
-                self.serial_port, timeout=5,baudrate=115200
-            )
-            log.logger.info(
-                f"Connected to serial port {self.serial_port}."
-            )
+            self.ser = serial.Serial(self.serial_port, timeout=5, baudrate=115200)
+            log.logger.info(f"Connected to serial port {self.serial_port}.")
         except serial.SerialException as e:
             log.logger.error(f"Failed to open serial port: {e}")
             raise
@@ -85,10 +76,14 @@ class JTAGServer:
 
                 log.logger.debug(f"Received {data.decode("utf-8")} from the client")
 
-                response = self.handle_bitbang_command(chr(data[0])) # data will just be one byte
+                response = self.handle_bitbang_command(
+                    chr(data[0])
+                )  # data will just be one byte
 
                 if response:
-                    log.logger.debug(f"Sending {response.decode("utf-8")} to the client")
+                    log.logger.debug(
+                        f"Sending {response.decode("utf-8")} to the client"
+                    )
                     conn.sendall(response)
 
                 if (
