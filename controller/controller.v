@@ -17,11 +17,14 @@ module controller #(
     output dp_pu_o,    // USB 1.5kOhm Pullup EN
     output tx_en_o,
 
-    // SPI flash related signals
-    output sck_o,
-    output cs_o,
-    input  poci_i,
-    output pico_o,
+    // JTAG related signals
+    output tms_o,
+    output tck_o,
+    output tdi_o,
+    input  tdo_i,
+    output srst_o,
+    output trst_o,
+    output jtag_led,
 
     // Debug signals
 `ifdef DEBUG
@@ -32,7 +35,13 @@ module controller #(
     output        efpga_write_strobe_o
 );
     // USB related definitions
-    localparam EFPGA = 1, MANTA = 2, JTAG = 3;
+    localparam EFPGA = 0, MANTA = 1, JTAG = 2;
+    localparam EFPGA_LSB = EFPGA * 8;
+    localparam EFPGA_MSB = EFPGA * 8 + 7;
+    localparam MANTA_LSB = MANTA * 8;
+    localparam MANTA_MSB = MANTA * 8 + 7;
+    localparam JTAG_LSB = JTAG * 8;
+    localparam JTAG_MSB = JTAG * 8 + 7;
     localparam CHANNELS = 'd3;
     localparam BIT_SAMPLES = 'd4;
 
@@ -83,6 +92,9 @@ module controller #(
     assign dn_rx   = dn_rx_i;
 
 
+    // NOTE:: With the registered values communication sometimes did not work
+    // correctly
+    //
     // always @(posedge clk_system_i, negedge reset_n_i) begin
     //     if (!reset_n_i) begin
     //         dp_tx_r <= 1'b0;
@@ -106,6 +118,7 @@ module controller #(
     assign usb_check_o = (configured) ? frame[9] : ~&frame[4:3];
 `endif
     usb_cdc #(
+        // TODO: Change PID and VID if manufactured
         .VENDORID              (16'h1D50),
         .PRODUCTID             (16'h6130),
         .CHANNELS              (CHANNELS),
@@ -137,15 +150,32 @@ module controller #(
     config_usb_cdc config_usb_cdc_inst (
         .clk_i              (clk_system_i),
         .reset_n_i          (reset_n_i),
-        .in_data_o          (in_data),
-        .in_valid_o         (in_valid),
-        .in_ready_i         (in_ready),
-        .out_data_i         (out_data),
-        .out_valid_i        (out_valid),
-        .out_ready_o        (out_ready),
+        .in_data_o          (in_data[EFPGA_MSB:EFPGA_LSB]),
+        .in_valid_o         (in_valid[EFPGA]),
+        .in_ready_i         (in_ready[EFPGA]),
+        .out_data_i         (out_data[EFPGA_MSB:EFPGA_LSB]),
+        .out_valid_i        (out_valid[EFPGA]),
+        .out_ready_o        (out_ready[EFPGA]),
         .word_write_strobe_o(efpga_write_strobe_o),
         .write_data_o       (efpga_write_data_o)
     );
-`endif
+
+    jtag_bridge jtag_bridge_inst (
+        .clk_i           (clk_system_i),
+        .rst_n_i         (reset_n_i),
+        .from_usb_data_i (out_data[JTAG_MSB:JTAG_LSB]),
+        .from_usb_valid_i(out_valid[JTAG]),
+        .from_usb_ready_o(out_ready[JTAG]),
+        .tck_o           (tck_o),
+        .tms_o           (tms_o),
+        .tdi_o           (tdi_o),
+        .tdo_i           (tdo_i),
+        .trst_o          (trst_o),
+        .srst_o          (srst_o),
+        .to_usb_data_o   (in_data[JTAG_MSB:JTAG_LSB]),
+        .to_usb_valid_o  (in_valid[JTAG]),
+        .to_usb_ready_i  (in_ready[JTAG]),
+        .bitbang_led_o   (jtag_led)
+    );
 
 endmodule
