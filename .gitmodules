@@ -1,0 +1,6 @@
+[submodule "JTAG-interface"]
+	path = JTAG-interface
+	url = git@github.com:vera2270/JTAG-interface.git
+[submodule "ibex-demo-system"]
+	path = ibex-demo-system
+	url = https://github.com/lowRISC/ibex-demo-system

@@ -1,5 +1,5 @@
 `timescale 1ps / 1ps
-module dpram #(
+module dpram_fabric #(
     parameter VECTOR_LENGTH = 512,  // Total memory words
     parameter WORD_WIDTH    = 8,    // Bit width of each word
     parameter ADDR_WIDTH    = 9     // Address length

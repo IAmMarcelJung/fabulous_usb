@@ -19,7 +19,6 @@ module config_UART #(
 );
 
     localparam TIME_TO_SEND_COUNTER_INIT_VALUE = 16777 - 1;  //200000000;
-    localparam TEST_FILE_CHECKSUM = 20'h4FB00;
 
     // NOTE: The user has to make sure that the relation division does not
     // result in a value that requires more than 12 bits. This is will
@@ -100,7 +99,6 @@ module config_UART #(
 
     reg        ByteWriteStrobe;
 
-    reg [19:0] CRCReg;
     reg [25:0] blink;
 
     always @(posedge CLK, negedge resetn) begin : P_sync
@@ -312,38 +310,25 @@ module config_UART #(
         end
     end
 
-    always @(posedge CLK, negedge resetn) begin : P_checksum
-        if (!resetn) begin
-            CRCReg     <= TEST_FILE_CHECKSUM;
-            blink      <= 23'b0;
-            ReceiveLED <= 1'b0;
-        end else begin
-            if (PresentState == GetCommand) begin  // init before data arrives
-                CRCReg <= 0;
-            end else if (Mode == 1 ||
-                         (Mode == 0 && Command_Reg[7] == 1'b1)) begin  // mode [0:auto|1:hex|2:bin]
-                // if hex mode or if auto mode with detected hex mode in the command register
-                if (ComState == GetStopBit && ComTick == 1'b1 && HexValue[4] == 1'b0 &&
-                    PresentState == GetData && ReceiveState == LowNibble) begin
-                    CRCReg <= CRCReg + {HighReg, HexValue[3:0]};
-                end
-            end else begin  // binary mode
-                if (ComState == GetStopBit && ComTick == 1'b1 && (PresentState == GetData)) begin
-                    CRCReg <= CRCReg + ReceivedWord;
-                end
-            end  // checksum computation
 
+    always @(posedge CLK, negedge resetn) begin
+        if (!resetn) blink <= 25'b0;
+        else blink <= blink - 1;
+    end
+
+    always @(posedge CLK, negedge resetn) begin
+        if (!resetn) ReceiveLED <= 1'b0;
+        else begin
             if (PresentState == GetData) begin
                 ReceiveLED <= 1'b1;  // receive process in progress
-            end else if ((PresentState == Idle) && (CRCReg != TEST_FILE_CHECKSUM)) begin
-                ReceiveLED <= blink[25];
+            end else if (PresentState == Idle) begin
+                ReceiveLED <= blink[22];
             end else begin
                 ReceiveLED <= 1'b0;  // receive process was OK
             end
-
-            blink <= blink - 1;
         end
     end
+
 
     always @(posedge CLK, negedge resetn) begin : P_bus
         if (!resetn) begin

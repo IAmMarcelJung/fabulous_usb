@@ -28,6 +28,7 @@ module ConfigFSM (
     reg       FrameStrobe;
     reg [4:0] FrameShiftState;
 
+    localparam SYNCHED = 1, SET_ROW_SELECT = 2;
     //FSM
     reg [1:0] state;
     reg       old_reset;
@@ -49,7 +50,7 @@ module ConfigFSM (
                 FrameShiftState <= 0;
             end else begin
                 case (state)
-                    1: begin  // SyncState read header
+                    SYNCHED: begin  // SyncState read header
                         if (WriteStrobe == 1'b1) begin  // if writing enabled
                             if (WriteData[DESYNC_FLAG] == 1'b1) begin  // desync
                                 state <= 0;  //desynced
@@ -60,7 +61,7 @@ module ConfigFSM (
                             end
                         end
                     end
-                    2: begin
+                    SET_ROW_SELECT: begin
                         if (WriteStrobe == 1'b1) begin  // if writing enabled
                             FrameShiftState <= FrameShiftState - 1;
                             if (FrameShiftState == 1) begin  // on last frame

@@ -4,13 +4,13 @@
 ## - rename the used ports (in each line, after get_ports) according to the top level signal names in the project
 
 ## Clock signal
-set_property -dict { PACKAGE_PIN W5   IOSTANDARD LVCMOS33 } [get_ports clk]
+set_property -dict {PACKAGE_PIN W5 IOSTANDARD LVCMOS33} [get_ports clk]
 
 ## Switches
-set_property -dict { PACKAGE_PIN V17   IOSTANDARD LVCMOS33 } [get_ports {user_io[0]}]
-set_property -dict { PACKAGE_PIN V16   IOSTANDARD LVCMOS33 } [get_ports {user_io[1]}]
-set_property -dict { PACKAGE_PIN W16   IOSTANDARD LVCMOS33 } [get_ports {user_io[2]}]
-set_property -dict { PACKAGE_PIN W17   IOSTANDARD LVCMOS33 } [get_ports {user_io[3]}]
+set_property -dict {PACKAGE_PIN V17 IOSTANDARD LVCMOS33} [get_ports {user_io[0]}]
+set_property -dict {PACKAGE_PIN V16 IOSTANDARD LVCMOS33} [get_ports {user_io[1]}]
+set_property -dict {PACKAGE_PIN W16 IOSTANDARD LVCMOS33} [get_ports {user_io[2]}]
+# set_property -dict { PACKAGE_PIN W17   IOSTANDARD LVCMOS33 } [get_ports {user_io[3]}]
 #set_property -dict { PACKAGE_PIN W15   IOSTANDARD LVCMOS33 } [get_ports {sw[4]}]
 #set_property -dict { PACKAGE_PIN V15   IOSTANDARD LVCMOS33 } [get_ports {sw[5]}]
 #set_property -dict { PACKAGE_PIN W14   IOSTANDARD LVCMOS33 } [get_ports {sw[6]}]
@@ -21,27 +21,27 @@ set_property -dict { PACKAGE_PIN W17   IOSTANDARD LVCMOS33 } [get_ports {user_io
 #set_property -dict { PACKAGE_PIN R3    IOSTANDARD LVCMOS33 } [get_ports {sw[11]}]
 #set_property -dict { PACKAGE_PIN W2    IOSTANDARD LVCMOS33 } [get_ports {sw[12]}]
 #set_property -dict { PACKAGE_PIN U1    IOSTANDARD LVCMOS33 } [get_ports {sw[13]}]
-#set_property -dict { PACKAGE_PIN T1    IOSTANDARD LVCMOS33 } [get_ports {sw[14]}]
-#set_property -dict { PACKAGE_PIN R2    IOSTANDARD LVCMOS33 } [get_ports {sw[15]}]
+# set_property -dict { PACKAGE_PIN T1    IOSTANDARD LVCMOS33 } [get_ports {clk_select[0]}]
+# set_property -dict { PACKAGE_PIN R2    IOSTANDARD LVCMOS33 } [get_ports {clk_select[1]}]
 
 
 ## LEDs
-set_property -dict { PACKAGE_PIN U16   IOSTANDARD LVCMOS33 } [get_ports {ReceiveLED}]
+set_property -dict {PACKAGE_PIN U16 IOSTANDARD LVCMOS33} [get_ports ReceiveLED]
 # set_property -dict { PACKAGE_PIN E19   IOSTANDARD LVCMOS33 } [get_ports {ComActive}]
-set_property -dict { PACKAGE_PIN U19   IOSTANDARD LVCMOS33 } [get_ports {user_io[4]}]
-set_property -dict { PACKAGE_PIN V19   IOSTANDARD LVCMOS33 } [get_ports {user_io[5]}]
-set_property -dict { PACKAGE_PIN W18   IOSTANDARD LVCMOS33 } [get_ports {user_io[6]}]
-set_property -dict { PACKAGE_PIN U15   IOSTANDARD LVCMOS33 } [get_ports {user_io[7]}]
-set_property -dict { PACKAGE_PIN U14   IOSTANDARD LVCMOS33 } [get_ports {heartbeat}]
-#set_property -dict { PACKAGE_PIN V14   IOSTANDARD LVCMOS33 } [get_ports {led[7]}]
+set_property -dict {PACKAGE_PIN U19 IOSTANDARD LVCMOS33} [get_ports {user_io[3]}]
+set_property -dict {PACKAGE_PIN V19 IOSTANDARD LVCMOS33} [get_ports {user_io[4]}]
+set_property -dict {PACKAGE_PIN W18 IOSTANDARD LVCMOS33} [get_ports {user_io[5]}]
+set_property -dict {PACKAGE_PIN U15 IOSTANDARD LVCMOS33} [get_ports {user_io[6]}]
+set_property -dict {PACKAGE_PIN U14 IOSTANDARD LVCMOS33} [get_ports {user_io[7]}]
+# set_property -dict { PACKAGE_PIN V14   IOSTANDARD LVCMOS33 } [get_ports {usb_led_o}]
 #set_property -dict { PACKAGE_PIN V13   IOSTANDARD LVCMOS33 } [get_ports {led[8]}]
 #set_property -dict { PACKAGE_PIN V3    IOSTANDARD LVCMOS33 } [get_ports {led[9]}]
 #set_property -dict { PACKAGE_PIN W3    IOSTANDARD LVCMOS33 } [get_ports {led[10]}]
 #set_property -dict { PACKAGE_PIN U3    IOSTANDARD LVCMOS33 } [get_ports {led[11]}]
 #set_property -dict { PACKAGE_PIN P3    IOSTANDARD LVCMOS33 } [get_ports {led[12]}]
-#set_property -dict { PACKAGE_PIN N3    IOSTANDARD LVCMOS33 } [get_ports {led[13]}]
-#set_property -dict { PACKAGE_PIN P1    IOSTANDARD LVCMOS33 } [get_ports {led[14]}]
-#set_property -dict { PACKAGE_PIN L1    IOSTANDARD LVCMOS33 } [get_ports {led[15]}]
+# set_property -dict { PACKAGE_PIN N3    IOSTANDARD LVCMOS33 } [get_ports {usb_led_o}]
+set_property -dict {PACKAGE_PIN P1 IOSTANDARD LVCMOS33} [get_ports heartbeat]
+set_property -dict {PACKAGE_PIN L1 IOSTANDARD LVCMOS33} [get_ports led_o]
 
 
 ##7 Segment Display
@@ -55,10 +55,10 @@ set_property -dict { PACKAGE_PIN U14   IOSTANDARD LVCMOS33 } [get_ports {heartbe
 
 #set_property -dict { PACKAGE_PIN V7   IOSTANDARD LVCMOS33 } [get_ports dp]
 
-set_property -dict { PACKAGE_PIN U2   IOSTANDARD LVCMOS33 } [get_ports {an[0]}]
-set_property -dict { PACKAGE_PIN U4   IOSTANDARD LVCMOS33 } [get_ports {an[1]}]
-set_property -dict { PACKAGE_PIN V4   IOSTANDARD LVCMOS33 } [get_ports {an[2]}]
-set_property -dict { PACKAGE_PIN W4   IOSTANDARD LVCMOS33 } [get_ports {an[3]}]
+set_property -dict {PACKAGE_PIN U2 IOSTANDARD LVCMOS33} [get_ports {an[0]}]
+set_property -dict {PACKAGE_PIN U4 IOSTANDARD LVCMOS33} [get_ports {an[1]}]
+set_property -dict {PACKAGE_PIN V4 IOSTANDARD LVCMOS33} [get_ports {an[2]}]
+set_property -dict {PACKAGE_PIN W4 IOSTANDARD LVCMOS33} [get_ports {an[3]}]
 
 
 ##Buttons
@@ -66,10 +66,14 @@ set_property -dict { PACKAGE_PIN W4   IOSTANDARD LVCMOS33 } [get_ports {an[3]}]
 #set_property -dict { PACKAGE_PIN T18   IOSTANDARD LVCMOS33 } [get_ports btnU]
 #set_property -dict { PACKAGE_PIN W19   IOSTANDARD LVCMOS33 } [get_ports btnL]
 #set_property -dict { PACKAGE_PIN T17   IOSTANDARD LVCMOS33 } [get_ports btnR]
-set_property -dict { PACKAGE_PIN U17   IOSTANDARD LVCMOS33 } [get_ports reset]
+set_property -dict {PACKAGE_PIN U17 IOSTANDARD LVCMOS33} [get_ports reset]
 
 
 ##Pmod Header JA
+set_property -dict {PACKAGE_PIN G2 IOSTANDARD LVCMOS33} [get_ports pico_o]
+set_property -dict {PACKAGE_PIN L2 IOSTANDARD LVCMOS33} [get_ports poci_i]
+set_property -dict {PACKAGE_PIN J1 IOSTANDARD LVCMOS33} [get_ports cs_o]
+set_property -dict {PACKAGE_PIN J2 IOSTANDARD LVCMOS33} [get_ports sck_o]
 # set_property -dict { PACKAGE_PIN J1   IOSTANDARD LVCMOS33 } [get_ports {Rx}]
 # set_property -dict { PACKAGE_PIN L2   IOSTANDARD LVCMOS33 } [get_ports {tms}]
 # set_property -dict { PACKAGE_PIN J2   IOSTANDARD LVCMOS33 } [get_ports {tdi}]
@@ -80,10 +84,13 @@ set_property -dict { PACKAGE_PIN U17   IOSTANDARD LVCMOS33 } [get_ports reset]
 #set_property -dict { PACKAGE_PIN G3   IOSTANDARD LVCMOS33 } [get_ports {JA[7]}];#Sch name = JA10
 
 ##Pmod Header JB
-set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {Rx}]
-# set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {user_io[1]}] #Sch name = JB2
-# set_property -dict { PACKAGE_PIN B15   IOSTANDARD LVCMOS33 } [get_ports {user_io[2]}] #Sch name = JB3
-# set_property -dict { PACKAGE_PIN B16   IOSTANDARD LVCMOS33 } [get_ports {user_io[3]}] #Sch name = JB4
+set_property -dict {PACKAGE_PIN A16 IOSTANDARD LVCMOS33} [get_ports Rx]
+set_property -dict {PACKAGE_PIN B15 IOSTANDARD LVCMOS33} [get_ports {s_data_i}]
+set_property -dict {PACKAGE_PIN B16 IOSTANDARD LVCMOS33} [get_ports {s_clk_i}]
+# set_property -dict {PACKAGE_PIN A15 IOSTANDARD LVCMOS33} [get_ports tms_i]
+#set_property -dict {PACKAGE_PIN A17 IOSTANDARD LVCMOS33} [get_ports tdi_i]
+#set_property -dict {PACKAGE_PIN C15 IOSTANDARD LVCMOS33} [get_ports tdo_o]
+#set_property -dict {PACKAGE_PIN C16 IOSTANDARD LVCMOS33} [get_ports tck_i]
 # set_property -dict { PACKAGE_PIN A15   IOSTANDARD LVCMOS33 } [get_ports {user_io[4]}] #Sch name = JB7
 # set_property -dict { PACKAGE_PIN A17   IOSTANDARD LVCMOS33 } [get_ports {user_io[5]}] #Sch name = JB8
 # set_property -dict { PACKAGE_PIN C15   IOSTANDARD LVCMOS33 } [get_ports {user_io[6]}] #Sch name = JB9
@@ -91,9 +98,9 @@ set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {Rx}]
 
 ##Pmod Header JC
 # set_property -dict { PACKAGE_PIN K17   IOSTANDARD LVCMOS33 } [get_ports {user_io[8]}] #Sch name = JC1
-# set_property -dict { PACKAGE_PIN M18   IOSTANDARD LVCMOS33 } [get_ports {user_io[9]}] #Sch name = JC2
-#set_property -dict { PACKAGE_PIN N17   IOSTANDARD LVCMOS33 } [get_ports {dp_io}];#Sch name = JC3
-# set_property -dict { PACKAGE_PIN P18   IOSTANDARD LVCMOS33 } [get_ports {Rx}] #Sch name = JC4
+set_property -dict {PACKAGE_PIN M18 IOSTANDARD LVCMOS33} [get_ports dp_pu_o]
+set_property -dict {PACKAGE_PIN N17 IOSTANDARD LVCMOS33} [get_ports dn_io]
+set_property -dict {PACKAGE_PIN P18 IOSTANDARD LVCMOS33} [get_ports dp_io]
 # set_property -dict { PACKAGE_PIN L17   IOSTANDARD LVCMOS33 } [get_ports {tms}] #Sch name = JC7
 # set_property -dict { PACKAGE_PIN M19   IOSTANDARD LVCMOS33 } [get_ports {tdi}] #Sch name = JC8
 # set_property -dict { PACKAGE_PIN P17   IOSTANDARD LVCMOS33 } [get_ports {tdo}] #Sch name = JC9
@@ -148,8 +155,8 @@ set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {Rx}]
 
 
 ## Configuration options, can be used for all designs
-# set_property CONFIG_VOLTAGE 3.3 [current_design]
-# set_property CFGBVS VCCO [current_design]
+set_property CONFIG_VOLTAGE 3.3 [current_design]
+set_property CFGBVS VCCO [current_design]
 
 ## SPI configuration mode options for QSPI boot, can be used for all designs
 # set_property BITSTREAM.GENERAL.COMPRESS TRUE [current_design]
@@ -161,13 +168,15 @@ set_property -dict { PACKAGE_PIN A16   IOSTANDARD LVCMOS33 } [get_ports {Rx}]
 
 ### Timing constraints
 
-# Input clock
-#create_clock -period 10.00 -waveform {0 5} [get_ports clk]
+set_false_path -to [get_ports {ReceiveLED an heartbeat dp_pu_o dn_io dp_io pico_o sck_o cs_o led_o, tdo_o}]
+set_false_path -from [get_ports {reset user_io Rx dn_io dp_io poci_i clk_select, tms_i, tdi_i, tck_i, s_clk_i, s_data_i}]
 
+set_disable_timing [get_pins -hierarchical *Q_reg*]
+set_disable_timing [get_pins -hierarchical *inferred_i_1__*]
+set_disable_timing [get_pins -filter {REF_PIN_NAME =~ "*BEG*"} -of_objects [get_cells -hierarchical -quiet -filter {NAME =~ "*switch_matrix*"}]]
 
-set_property ALLOW_COMBINATORIAL_LOOPS true [get_nets -hierarchical -filter {NAME =~ *BEG*}]
-#set_disable_timing [get_pins -hierarchical -filter {NAME =~ *BEG*}]
-#set_disable_timing [get_pins -filter {REF_PIN_NAME =~ "*BEG*"} -of_objects [get_cells -hierarchical -quiet -filter {NAME =~ "*switch_matrix*"}]]
+# Ignore timing between usb and system clock
+# Vivado recommended this setting for getting the clocks in the methodology report
 
-set_false_path -to [get_ports {ReceiveLED an heartbeat}]
-set_false_path -from [get_ports {reset user_io Rx}]
+set_false_path -from [get_clocks -of_objects [get_pins pll_48_12_MHz_inst/inst/mmcm_adv_inst/CLKOUT1]] -to [get_clocks -of_objects [get_pins pll_48_12_MHz_inst/inst/mmcm_adv_inst/CLKOUT0]]
+set_false_path -from [get_clocks -of_objects [get_pins pll_48_12_MHz_inst/inst/mmcm_adv_inst/CLKOUT0]] -to [get_clocks -of_objects [get_pins pll_48_12_MHz_inst/inst/mmcm_adv_inst/CLKOUT1]]

@@ -1,11 +1,11 @@
 `timescale 1ps / 1ps
 module top_tb;
-    wire [ 7:0] user_io;
-    wire [ 7:0] user_io_gold;
     reg  [ 7:0] O_top;
+    wire [ 7:0] I_top;
+    wire [ 7:0] T_top;
 
     reg         CLK = 1'b0;
-    reg         reset = 1'b0;
+    reg         reset_n = 1'b0;
     reg         Rx = 1'b1;
     wire        ReceiveLED;
     reg         s_clk = 1'b0;
@@ -24,41 +24,29 @@ module top_tb;
         .UART_BAUD_RATE (UART_BAUD_RATE),
         .CLOCK_FREQUENCY(CLOCK_FREQUENCY)
     ) top_i (
-        .user_io   (user_io),
+        .I_top       (I_top),
+        .O_top       (O_top),
+        .T_top       (T_top),
         //Config related ports
-        .clk       (CLK),
-        .reset     (reset),
-        .Rx        (uart_serial),
-        .ReceiveLED(ReceiveLED),
-
-        .heartbeat(heartbeat),
-        .an       (an)          // 7 segment anodes
+        .clk_system_i(CLK),
+        .reset_n_i   (reset_n),
+        .Rx          (uart_serial),
+        .ReceiveLED  (ReceiveLED)
     );
-    assign user_io[3:0]      = O_top[3:0];
-    assign user_io_gold[3:0] = O_top[3:0];
 
     always @(posedge CLK) ctr <= ctr + 1'b1;
     assign heartbeat_gold = ctr[25];
 
-    wire [7:0] I_top_gold, oeb_gold;
-    test_design dut_i (
+    wire [7:0] I_top_gold, oeb_gold, T_top_gold;
+    counter dut_i (
         .clk   (CLK),
         .io_out(I_top_gold),
         .io_oeb(oeb_gold),
         .io_in (O_top)
     );
 
-    genvar user_io_num;
-    generate
-        for (
-            user_io_num = 0; user_io_num < NUM_USED_IOS; user_io_num = user_io_num + 1
-        ) begin : g_tristate_outputs
-            if (user_io_num >= 4)
-                assign user_io_gold[user_io_num] = oeb_gold[user_io_num] ? 1'bz :
-                    I_top_gold[user_io_num];
-            else assign user_io_gold[user_io_num] = 1'bz;
-        end
-    endgenerate
+    assign T_top_gold = ~oeb_gold;
+
     localparam CLKS_PER_BIT = CLOCK_FREQUENCY / UART_BAUD_RATE;
     reg        uart_enable;
     reg  [7:0] uart_byte;
@@ -91,10 +79,10 @@ module top_tb;
         $dumpvars(0, top_tb);
 `endif
 `ifndef EMULATION
-        $readmemh("./build/test_design.hex", bitstream);
+        $readmemh("./build/counter.hex", bitstream);
         #100;
         uart_enable    = 1'b0;
-        reset          = 1'b1;
+        reset_n        = 1'b1;
         uart_byte      = 8'h0;
         O_top          = 8'b00000011;
         desync_flag[3] = 8'h00;
@@ -102,17 +90,13 @@ module top_tb;
         desync_flag[1] = 8'h10;
         desync_flag[0] = 8'h00;
         #10000;
-        reset = 1'b0;  // Make sure we get a falling edge
 
-        repeat (5) @(posedge CLK);
-        reset = 1'b1;
-        repeat (5) @(posedge CLK);
-        reset = 1'b0;
-        repeat (5) @(posedge CLK);
-        reset = 1'b1;
+        reset_n = 1'b0;
+        #10000;
+        reset_n = 1'b1;
+        #10000;
         repeat (20) @(posedge CLK);
-        reset = 1'b0;
-        repeat (5) @(posedge CLK);
+        #2500;
         for (i = 0; i < MAX_BITBYTES; i = i + 1) begin
             uart_enable = 1'b1;
             uart_byte   = bitstream[i];
@@ -120,45 +104,19 @@ module top_tb;
             uart_enable = 1'b0;
             repeat (5) @(posedge CLK);
         end
-        // // Desync flag
-        // for (i = 0; i < 12; i = i + 1) begin
-        //     uart_enable = 1'b1;
-        //     uart_byte   = 8'b0;
-        //     repeat (10 * CLKS_PER_BIT) @(posedge CLK);
-        //     uart_enable = 1'b0;
-        //     repeat (5) @(posedge CLK);
-        // end
-        // // Desync flag
-        // for (i = 0; i < 4; i = i + 1) begin
-        //     uart_enable = 1'b1;
-        //     uart_byte   = desync_flag[i];
-        //     repeat (10 * CLKS_PER_BIT) @(posedge CLK);
-        //     uart_enable = 1'b0;
-        //     repeat (5) @(posedge CLK);
-        // end
 `endif
 
+        repeat (100) @(posedge CLK);
+        O_top = 8'b00000001;  // reset_n
         repeat (5) @(posedge CLK);
-        O_top = 8'b00000010;
-        repeat (5) @(posedge CLK);
-        O_top = 8'b00000011;
-        repeat (5) @(posedge CLK);
-        O_top = 8'b00000010;
+        O_top = 8'b0;
         for (i = 0; i < 100; i = i + 1) begin
-            O_top[1] = ~O_top[2];
             repeat (1) @(posedge CLK);
-            O_top[2] = ~O_top[1];
             @(negedge CLK);
-            $display("fabric(user_io) = 0x%X gold = 0x%X,", user_io, user_io_gold);
-            if (user_io !== user_io_gold) have_errors = 1'b1;
-            if (heartbeat !== heartbeat_gold) begin
-                have_errors = 1'b1;
-                $display("heartbeat = 0x%X gold = 0x%X", heartbeat, heartbeat_gold);
-            end
-            if (an !== an_gold) begin
-                have_errors = 1'b1;
-                $display("an = 0x%X gold = 0x%X", an, an_gold);
-            end
+            $display("fabric(I_top) = 0x%X gold = 0x%X, fabric(T_top) = 0x%X gold = 0x%X", I_top,
+                     I_top_gold, T_top, T_top_gold);
+            if (I_top !== I_top_gold) have_errors = 1'b1;
+            if (T_top !== T_top_gold) have_errors = 1'b1;
         end
 
         if (have_errors) $fatal;

@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ps / 1ps
 module eFPGA_top #(
     parameter NUMBER_OF_ROWS     = 4,
     parameter NUMBER_OF_COLS     = 5,
@@ -28,10 +28,15 @@ module eFPGA_top #(
     input         Rx,
     output        ComActive,
     output        ReceiveLED,
-    // verilator lint_off UNUSEDSIGNAL
-    input         s_clk,
-    input         s_data
-    // verilator lint_on UNUSEDSIGNAL
+    input         s_clk_i,
+    input         s_data_i,
+    output [ 7:0] from_efpga_data_o,
+    output        from_efpga_valid_o,
+    input         from_efpga_ready_i,
+    input  [ 7:0] to_efpga_data_i,
+    input         to_efpga_valid_i,
+    output        to_efpga_ready_o
+
 );
     //BlockRAM ports
 
@@ -68,6 +73,8 @@ module eFPGA_top #(
         .Rx                  (Rx),
         .ReceiveLED          (ReceiveLED),
         .ComActive           (ComActive),
+        .s_clk_i             (s_clk_i),
+        .s_data_i            (s_data_i),
         .SelfWriteData       (SelfWriteData),
         .SelfWriteStrobe     (SelfWriteStrobe),
         // verilator lint_off PINCONNECTEMPTY
