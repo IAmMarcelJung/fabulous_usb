@@ -33,7 +33,7 @@ class JTAGClient:
             log.logger.info(f"Sending: {cmd}")
             try:
                 self.sock.sendall(cmd.encode())
-                time.sleep(0.1)
+                # time.sleep(0.1)
             except Exception as e:
                 log.logger.error(f"Error sending command '{cmd}': {e}")
 
@@ -66,29 +66,33 @@ def main():
     #     ["B", "b", "B", "b", "B", "b", "B", "1", "2", "3", "4", "5", "6", "7"]
     # )
 
-    # Toggle TDI
-    for _ in range(5):
-        jtag.send_commands(["0", "1"])
+    # # Toggle TDI
+    # for _ in range(5):
+    #     jtag.send_commands(["0", "1"])
+    #
+    # # Toggle TCK
+    # for _ in range(5):
+    #     jtag.send_commands(["0", "4"])
+    #
+    # # Toggle TMS
+    # for _ in range(5):
+    #     jtag.send_commands(["0", "2"])
+    #
+    # # Toggle All
+    # for _ in range(5):
+    #     jtag.send_commands(["0", "7"])
+    #
+    # # Toggle TRST
+    # for _ in range(5):
+    #     jtag.send_commands(["r", "t"])
 
-    # Toggle TCK
+    # Toggle LED
     for _ in range(5):
-        jtag.send_commands(["0", "4"])
+        jtag.send_commands(["B", "b"])
 
-    # Toggle TMS
+    # Toggle R
     for _ in range(5):
-        jtag.send_commands(["0", "2"])
-
-    # Toggle All
-    for _ in range(5):
-        jtag.send_commands(["0", "7"])
-
-    # Toggle TRST
-    for _ in range(5):
-        jtag.send_commands(["r", "t"])
-
-    # Toggle SRST
-    for _ in range(5):
-        jtag.send_commands(["r", "s"])
+        jtag.send_commands(["R", "0"])
 
 
 if __name__ == "__main__":

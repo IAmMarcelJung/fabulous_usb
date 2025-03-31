@@ -50,26 +50,26 @@ module config_usb_cdc (
     // correctly
 
     always @(*) begin
-        if (!reset_n_i) begin
-            ack_state_next = STATE_IDLE;
-        end else begin
-            ack_state_next = ack_state;
-            case (ack_state)
-                STATE_IDLE: begin
-                    if (write_data == DESYNC_FRAME)
-                        ack_state_next = STATE_BYTE_3;  // Start sending sequence
-                end
-                STATE_BYTE_3:      if (in_ready_i) ack_state_next = STATE_BYTE_3_WAIT;
-                STATE_BYTE_2:      if (in_ready_i) ack_state_next = STATE_BYTE_2_WAIT;
-                STATE_BYTE_1:      if (in_ready_i) ack_state_next = STATE_BYTE_1_WAIT;
-                STATE_BYTE_0:      ack_state_next = STATE_BYTE_0_WAIT;
-                STATE_BYTE_3_WAIT: ack_state_next = STATE_BYTE_2;
-                STATE_BYTE_2_WAIT: ack_state_next = STATE_BYTE_1;
-                STATE_BYTE_1_WAIT: ack_state_next = STATE_BYTE_0;
-                STATE_BYTE_0_WAIT: ack_state_next = STATE_IDLE;
-                default:           ack_state_next = STATE_IDLE;
-            endcase
-        end
+        ack_state_next = ack_state;
+        case (ack_state)
+            STATE_IDLE: begin
+                if (write_data == DESYNC_FRAME)
+                    ack_state_next = STATE_BYTE_3;  // Start sending sequence
+            end
+            STATE_BYTE_3:      if (in_ready_i) ack_state_next = STATE_BYTE_3_WAIT;
+            STATE_BYTE_2:      if (in_ready_i) ack_state_next = STATE_BYTE_2_WAIT;
+            STATE_BYTE_1:      if (in_ready_i) ack_state_next = STATE_BYTE_1_WAIT;
+            STATE_BYTE_0:      if (in_ready_i) ack_state_next = STATE_BYTE_0_WAIT;
+            // STATE_BYTE_3:      if (in_ready_i) ack_state_next = STATE_BYTE_2;
+            // STATE_BYTE_2:      if (in_ready_i) ack_state_next = STATE_BYTE_1;
+            // STATE_BYTE_1:      if (in_ready_i) ack_state_next = STATE_BYTE_0;
+            // STATE_BYTE_0:      if (in_ready_i) ack_state_next = STATE_IDLE;
+            STATE_BYTE_3_WAIT: ack_state_next = STATE_BYTE_2;
+            STATE_BYTE_2_WAIT: ack_state_next = STATE_BYTE_1;
+            STATE_BYTE_1_WAIT: ack_state_next = STATE_BYTE_0;
+            STATE_BYTE_0_WAIT: ack_state_next = STATE_IDLE;
+            default:           ack_state_next = STATE_IDLE;
+        endcase
     end
 
     always @(posedge clk_i, negedge reset_n_i) begin
@@ -81,34 +81,29 @@ module config_usb_cdc (
     end
 
     always @(*) begin
-        if (!reset_n_i) begin
-            in_valid_next = 1'b0;
-            in_data_next  = 8'b0;
-        end else begin
-            case (ack_state)
-                STATE_BYTE_3: begin
-                    in_valid_next = 1'b1;
-                    in_data_next  = DONE_FRAME[24+:8];
-                end
-                STATE_BYTE_2: begin
-                    in_valid_next = 1'b1;
-                    in_data_next  = DONE_FRAME[16+:8];
-                end
-                STATE_BYTE_1: begin
-                    in_valid_next = 1'b1;
-                    in_data_next  = DONE_FRAME[8+:8];
-                end
-                STATE_BYTE_0: begin
-                    in_valid_next = 1'b1;
-                    in_data_next  = DONE_FRAME[0+:8];
-                end
-                // All wait states
-                default: begin
-                    in_valid_next = 1'b0;
-                    in_data_next  = in_data_r;
-                end
-            endcase
-        end
+        case (ack_state)
+            STATE_BYTE_3: begin
+                in_valid_next = 1'b1;
+                in_data_next  = DONE_FRAME[24+:8];
+            end
+            STATE_BYTE_2: begin
+                in_valid_next = 1'b1;
+                in_data_next  = DONE_FRAME[16+:8];
+            end
+            STATE_BYTE_1: begin
+                in_valid_next = 1'b1;
+                in_data_next  = DONE_FRAME[8+:8];
+            end
+            STATE_BYTE_0: begin
+                in_valid_next = 1'b1;
+                in_data_next  = DONE_FRAME[0+:8];
+            end
+            // All wait states
+            default: begin
+                in_valid_next = 1'b0;
+                in_data_next  = in_data_r;
+            end
+        endcase
     end
 
     always @(posedge clk_i, negedge reset_n_i) begin
@@ -128,20 +123,30 @@ module config_usb_cdc (
 
     always @(posedge clk_i, negedge reset_n_i) begin
         if (!reset_n_i) begin
-            word_buffer    <= 32'b0;
             byte_index     <= 2'b0;
             byte_index_old <= 2'b0;
             get_data_flag  <= 1'b0;
         end else begin
             byte_index_old <= byte_index;
             if (out_valid_i) begin
-                word_buffer <= {word_buffer[23:0], out_data_i};
                 if (word_buffer[31:8] == 24'h00AAFF &&
                     (word_buffer[6:0] == {7'h1} || word_buffer[6:0] == {7'h2})) begin
                     byte_index    <= 2'b01;
                     get_data_flag <= 1'b1;
                 end
                 byte_index <= byte_index + 1'b1;
+                // Do not get more data
+                if (write_data == DESYNC_FRAME) get_data_flag <= 1'b0;
+            end
+        end
+    end
+
+    always @(posedge clk_i, negedge reset_n_i) begin
+        if (!reset_n_i) begin
+            word_buffer <= 32'b0;
+        end else begin
+            if (out_valid_i) begin
+                word_buffer <= {word_buffer[23:0], out_data_i};
             end
         end
     end
@@ -152,6 +157,7 @@ module config_usb_cdc (
             word_write_strobe <= 1'b0;
         end else begin
             word_write_strobe <= 1'b0;
+            write_data        <= 32'b0;
             if (get_data_flag && byte_index == 2'b00) begin
                 write_data <= word_buffer;
                 if (byte_index == 2'b00 && byte_index_old == 2'b11) word_write_strobe <= 1'b1;

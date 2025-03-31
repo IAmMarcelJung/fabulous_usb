@@ -1,4 +1,5 @@
 `timescale 1ps / 1ps
+
 module top_basys3 #(
     parameter NUM_OF_ANODES     = 4,
     parameter NUM_USED_IOS      = 8,
@@ -9,20 +10,18 @@ module top_basys3 #(
     inout [NUM_USED_IOS-1:0] user_io,
 
     //Config related ports
-    input  clk,
-    input  reset,
-    input  Rx,
-    output ReceiveLED,
-    input  s_clk_i,
-    input  s_data_i,
+    input clk,
+    input reset,
+    // input  Rx,
+    // output ReceiveLED,
+    // input  s_clk_i,
+    // input  s_data_i,
 
     // JTAG port
-`ifdef JTAG
-    input  tms_i,
-    input  tdi_i,
-    output tdo_o,
-    input  tck_i,
-`endif
+    // input  tms_i,
+    // input  tdi_i,
+    // output tdo_o,
+    // input  tck_i,
 
     output [NUM_OF_ANODES-1:0] an,         // 7 segment anodes
     inout                      dp_io,      // USB+
@@ -31,11 +30,19 @@ module top_basys3 #(
 `ifdef DEBUG
     output                     led_o,
     output                     heartbeat,
+    output                     jtag_led,
 `endif
-    output                     sck_o,
-    output                     cs_o,
-    input                      poci_i,
-    output                     pico_o
+    // output                     sck_o,
+    // output                     cs_o,
+    // input                      poci_i,
+    // output                     pico_o,
+
+    // Ibex signals
+    input        ibex_uart_rx,
+    output       ibex_uart_tx,
+    input  [3:0] ibex_sw,
+    input  [3:0] ibex_btn,
+    output [3:0] ibex_led
 
 );
 
@@ -43,15 +50,6 @@ module top_basys3 #(
     localparam LED_FIRST_IO = NUM_USED_SWITCHES;
     localparam LED_LAST_IO = LED_FIRST_IO + NUM_USED_LEDS - 1;
 
-    // DFU related parameters
-    localparam CHANNELS = 'd3
-        ;  // Channel 1: eFPGA Config, CHANNEL 2: eFPGA Manta Logic Analyzer, Channel 3: Ibex JTAG
-    localparam BIT_SAMPLES = 'd4;
-    localparam TRANSFER_SIZE = 'd256;
-    localparam POLLTIMEOUT = 'd10;  // ms
-    localparam MS20 = 1;
-    localparam WCID = 1;
-    //BlockRAM ports
 
     wire                    reset_n;
     wire [NUM_USED_IOS-1:0] I_top;
@@ -102,14 +100,14 @@ module top_basys3 #(
     always @(posedge clk_system) ctr <= ctr + 1'b1;
     assign heartbeat = ctr[23];
 
-    top top_inst (
+    top_debug_and_boot_system top_inst (
         .clk_system_i(clk_system),
         .clk_usb_i   (clk_usb),
         .reset_n_i   (reset_n),
-        .Rx          (Rx),
-        .ReceiveLED  (ReceiveLED),
-        .s_clk_i     (s_clk_i),
-        .s_data_i    (s_data_i),
+        // .Rx          (Rx),
+        // .ReceiveLED  (ReceiveLED),
+        // .s_clk_i     (s_clk_i),
+        // .s_data_i    (s_data_i),
         .I_top       (I_top),
         .O_top       (O_top),
         .T_top       (T_top),
@@ -121,17 +119,22 @@ module top_basys3 #(
         .tx_en_o     (tx_en),
 `ifdef DEBUG
         .usb_check_o (led_o),
+        .ctr         (ctr),
 `endif
-`ifdef JTAG
-        .tms         (tms_i),
-        .tdi         (tdi_i),
-        .tdo         (tdo_o),
-        .tck         (tck_i),
-`endif
-        .sck_o       (sck_o),
-        .cs_o        (cs_o),
-        .poci_i      (poci_i),
-        .pico_o      (pico_o)
+        // .tms         (tms_i),
+        // .tdi         (tdi_i),
+        // .tdo         (tdo_o),
+        // .tck         (tck_i),
+        .uart_rx     (ibex_uart_rx),
+        .uart_tx     (ibex_uart_tx),
+        .sw          (ibex_sw),
+        .btn         (ibex_btn),
+        .led         (ibex_led)
+
+        // .sck_o       (sck_o),
+        // .cs_o        (cs_o),
+        // .poci_i      (poci_i),
+        // .pico_o      (pico_o)
     );
 
 endmodule

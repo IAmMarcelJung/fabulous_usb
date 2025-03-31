@@ -1,3 +1,5 @@
+# Create main clock
+create_clock -add -name sys_clk_pin -period 10.00 -waveform {0 5} [get_ports clk]
 set_false_path -to [get_ports {an user_io heartbeat dp_pu_o dn_io dp_io led_o
 jtag_led ibex_uart_tx ibex_led}]
 set_false_path -from [get_ports {reset user_io dn_io dp_io ibex_uart_rx ibex_sw

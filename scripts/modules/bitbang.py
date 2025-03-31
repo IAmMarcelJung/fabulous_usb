@@ -16,10 +16,11 @@ class Bitbang:
         self.gpio = GpioController()
         self.SDATA_PIN = 0x20  # D5
         self.SCLK_PIN = 0x40  # D6
-        self.gpio.open_from_url(url, direction=self.SDATA_PIN + self.SCLK_PIN)
+        self.gpio.configure(url, direction=self.SDATA_PIN + self.SCLK_PIN, pace=1000000)
         self.gpio.set_direction(
             self.SDATA_PIN | self.SCLK_PIN, self.SDATA_PIN | self.SCLK_PIN
         )
+        self.gpio.set_frequency(10000000)
 
     def transmit(self, data: bytes, ctrl_word: int) -> None:
         """Transmit data using a custom bitbang protocol.

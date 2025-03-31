@@ -29,13 +29,30 @@ def setup_logger(verbosity: int):
     logger.add(sys.stdout, format=log_format, level=level, colorize=True)
 
 
+# def display_footer(start_time, total_bytes):
+#     end_time = time.time()
+#     total_time = end_time - start_time
+#     logger.debug(f"Transmitted {total_bytes} bytes in {total_time:.4f} seconds")
+#     logger.debug(
+#         f"Approximate transmission rate: {total_bytes/total_time:.2f} bytes/second"
+#     )
+
+
 def display_footer(start_time, total_bytes):
     end_time = time.time()
     total_time = end_time - start_time
+    if total_time == 0:
+        logger.warning("Total time is too short to calculate a meaningful rate.")
+        return
+
+    bytes_per_second = total_bytes / total_time
+    kilobytes_per_second = bytes_per_second / 1024
+    kilobits_per_second = (bytes_per_second * 8) / 1000  # Using 1000 for kbit
+
     logger.debug(f"Transmitted {total_bytes} bytes in {total_time:.4f} seconds")
-    logger.debug(
-        f"Approximate transmission rate: {total_bytes/total_time:.2f} bytes/second"
-    )
+    logger.debug(f"Approximate transmission rate: {bytes_per_second:.2f} bytes/second")
+    logger.debug(f"Approximate transmission rate: {kilobytes_per_second:.2f} KB/s")
+    logger.debug(f"Approximate transmission rate: {kilobits_per_second:.2f} kbit/s")
 
 
 if __name__ == "__main__":

@@ -23,7 +23,7 @@ class JTAGServer:
     def setup_serial(self):
         """Initialize USB CDC serial connection."""
         try:
-            self.ser = serial.Serial(self.serial_port, timeout=5, baudrate=115200)
+            self.ser = serial.Serial(self.serial_port, timeout=1, baudrate=230400)
             log.logger.info(f"Connected to serial port {self.serial_port}.")
         except serial.SerialException as e:
             log.logger.error(f"Failed to open serial port: {e}")
@@ -57,9 +57,10 @@ class JTAGServer:
                 return b""
 
             if cmd == "R":  # Only read when TDO is requested
-                self.ser.reset_input_buffer()
+                # self.ser.reset_input_buffer()
                 tdo = self.ser.read(1)
-                self.ser.reset_input_buffer()
+                # self.ser.reset_output_buffer()
+                # self.ser.reset_input_buffer()
                 log.logger.debug(f"Read tdo data {tdo.decode("utf-8")} from device.")
                 return tdo
 

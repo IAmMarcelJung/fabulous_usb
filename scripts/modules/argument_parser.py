@@ -14,8 +14,15 @@ def parse_arguments():
     parser.add_argument(
         "--baudrate",
         type=int,
-        default=115200,
+        # default=115200,
+        default=921600,
         help="The baud rate to use, defaults to 115200.",
+    )
+    parser.add_argument(
+        "--repetitions",
+        type=int,
+        default=1,
+        help="The number of bitstream transmission repetitions. Useful for speed measurements, defaults to 1.",
     )
     parser.add_argument(
         "--acm_port",
@@ -41,6 +48,7 @@ def parse_arguments():
     )
     return parser.parse_args()
 
+
 def parse_bridge_arguments():
     parser = argparse.ArgumentParser(
         description="Create a server which acts as a bridge between OpenOCD and the JTAG target device can connect."
@@ -55,13 +63,13 @@ def parse_bridge_arguments():
         "--address",
         type=str,
         default="127.0.0.1",
-        help="The address of the bridge server, defaults to 127.0.0.1."
+        help="The address of the bridge server, defaults to 127.0.0.1.",
     )
     parser.add_argument(
         "--port",
         type=int,
         default=4567,
-        help="The port of the bridge server, defaults to 4567."
+        help="The port of the bridge server, defaults to 4567.",
     )
     parser.add_argument(
         "-v",
@@ -71,6 +79,7 @@ def parse_bridge_arguments():
         help="Show detailed log information including function and line number",
     )
     return parser.parse_args()
+
 
 if __name__ == "__main__":
     pass

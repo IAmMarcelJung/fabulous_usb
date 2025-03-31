@@ -29,7 +29,14 @@ module eFPGA_top #(
     output        ComActive,
     output        ReceiveLED,
     input         s_clk_i,
-    input         s_data_i
+    input         s_data_i,
+    output [ 7:0] from_efpga_data_o,
+    output        from_efpga_valid_o,
+    input         from_efpga_ready_i,
+    input  [ 7:0] to_efpga_data_i,
+    input         to_efpga_valid_i,
+    output        to_efpga_ready_o
+
 );
     //BlockRAM ports
 

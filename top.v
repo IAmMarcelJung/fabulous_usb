@@ -74,14 +74,13 @@ module top #(
     wire                                               LocalWriteStrobe;
     wire [                       ROW_SELECT_WIDTH-1:0] RowSelect;
 
-    wire                                               boot;
     wire [                                       31:0] usb_write_data;
     wire                                               usb_write_strobe;
     wire [                                       31:0] efpga_write_data;
     wire                                               efpga_write_strobe;
     wire                                               efpga_reset_n;
 
-    assign efpga_reset_n = reset_n_i & !boot;
+    assign efpga_reset_n = reset_n_i;
 
 `ifdef JTAG
     //JTAG related signals
@@ -160,7 +159,6 @@ module top #(
     ) controller_inst (
         .clk_system_i        (clk_system_i),
         .reset_n_i           (reset_n_i),
-        .boot_o              (boot),
         .clk_usb_i           (clk_usb_i),
         .dp_tx_o             (dp_tx_o),
         .dp_rx_i             (dp_rx_i),

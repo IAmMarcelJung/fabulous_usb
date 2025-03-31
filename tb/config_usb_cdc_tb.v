@@ -49,6 +49,11 @@ module config_usb_cdc_tb;
     end
 
     initial begin
+        in_ready = 1'b0;
+        forever #50000 in_ready = ~in_ready;
+    end
+
+    initial begin
         tb_utils_inst.monitor_write_data();
     end
 
@@ -57,7 +62,7 @@ module config_usb_cdc_tb;
         $dumpfile(`DUMP_FILE);
         $dumpvars(0, `TOP_MODULE);
 `endif
-        in_ready = 1'b1;  // Data can always be sent from the DUT
+        // in_ready = 1'b1;  // Data can always be sent from the DUT
         tb_utils_inst.dump_arrays();
 
         tb_utils_inst.load_bitstream("./build/counter.hex");

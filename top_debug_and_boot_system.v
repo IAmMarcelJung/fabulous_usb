@@ -1,5 +1,5 @@
 `timescale 1ps / 1ps
-module top #(
+module top_debug_and_boot_system #(
     parameter NUMBER_OF_ROWS         = 4,
     parameter NUMBER_OF_COLS         = 5,
     parameter FRAME_BITS_PER_ROW     = 32,
@@ -27,20 +27,27 @@ module top #(
     output [(NUMBER_OF_ROWS * 2)-1:0] T_top,
 
 
-    input  dp_rx_i,     // USB+ RX
-    output dp_tx_o,     // USB+ TX
-    input  dn_rx_i,     // USB- RX
-    output dn_tx_o,     // USB- TX
-    output dp_pu_o,     // USB 1.5kOhm Pullup EN
+    // USB signals
+    input  dp_rx_i,  // USB+ RX
+    output dp_tx_o,  // USB+ TX
+    input  dn_rx_i,  // USB- RX
+    output dn_tx_o,  // USB- TX
+    output dp_pu_o,  // USB 1.5kOhm Pullup EN
     output tx_en_o,
-    output usb_check_o,
 
+`ifdef DEBUG
+    // NOTE: just for testing
+    input  [29:0] ctr,
+    output        jtag_led,
+    output        usb_check_o,
+`endif
+
+    // SOC signals
     input  [3:0] sw,
     input  [3:0] btn,
     output [3:0] led,
     input        uart_rx,
-    output       uart_tx,
-    output       jtag_led
+    output       uart_tx
     // output sck_o,
     // output cs_o,
     // input  poci_i,
@@ -80,6 +87,13 @@ module top #(
     wire                                               efpga_write_strobe;
     wire                                               efpga_reset_n;
 
+    wire [                                        7:0] from_efpga_data;
+    wire                                               from_efpga_valid;
+    wire                                               from_efpga_ready;
+    wire [                                        7:0] to_efpga_data;
+    wire                                               to_efpga_valid;
+    wire                                               to_efpga_ready;
+
     // JTAG signals
     wire tck, tms, tdi, tdo, trst, srst;
 
@@ -87,6 +101,16 @@ module top #(
 
     assign efpga_write_data   = usb_write_data;
     assign efpga_write_strobe = usb_write_strobe;
+
+
+    // manta manta_inst (
+    //     .clk(clk_system_i),
+    //     .rst(!reset_n_i),
+    //     .rx (uart_rx),
+    //     .tx (uart_tx),
+    //     .ctr(ctr)
+    // );
+
 
     eFPGA_top #(
         .NUMBER_OF_ROWS    (NUMBER_OF_ROWS),
@@ -112,14 +136,20 @@ module top #(
         .resetn        (efpga_reset_n),
 
         //Config related ports
-        .SelfWriteStrobe(efpga_write_strobe),
-        .SelfWriteData  (efpga_write_data),
+        .SelfWriteStrobe   (efpga_write_strobe),
+        .SelfWriteData     (efpga_write_data),
         // verilator lint_off PINCONNECTEMPTY
-        .s_clk_i        (),
-        .s_data_i       (),
-        .ComActive      (),
-        .Rx             (),
-        .ReceiveLED     ()
+        .s_clk_i           (),
+        .s_data_i          (),
+        .ComActive         (),
+        .Rx                (),
+        .ReceiveLED        (),
+        .to_efpga_data_i   (to_efpga_data),
+        .to_efpga_valid_i  (to_efpga_valid),
+        .to_efpga_ready_o  (to_efpga_ready),
+        .from_efpga_data_o (from_efpga_data),
+        .from_efpga_valid_o(from_efpga_valid),
+        .from_efpga_ready_i(from_efpga_ready)
         // verilator lint_on PINCONNECTEMPTY
     );
 
@@ -128,11 +158,12 @@ module top #(
         .clk_sys_i (clk_system_i),
         .rst_sys_ni(reset_n_i),
         .gp_i      ({sw, btn}),
-        .uart_rx_i (uart_rx),
+        // .uart_rx_i (uart_rx),
+        .uart_rx_i (1'b0),
 
         //output
-        .gp_o     (led),
-        .uart_tx_o(uart_tx),
+        .gp_o(led),
+        // .uart_tx_o(uart_tx),
 
         // Unused
         // verilator lint_off PINCONNECTEMPTY
@@ -152,7 +183,7 @@ module top #(
     controller #(
         .USE_SYSTEM_CLK      (1),
         .SYSTEM_CLK_FREQUENCY(FABRIC_CLOCK_FREQUENCY / 1_000_000),
-        .MAX_PACKETSIZE      (64)
+        .MAX_PACKETSIZE      (32)
     ) controller_inst (
         .clk_system_i        (clk_system_i),
         .reset_n_i           (reset_n_i),
@@ -171,9 +202,17 @@ module top #(
         .trst_o              (trst_o),
 `ifdef DEBUG
         .usb_check_o         (usb_check_o),
+        .jtag_led            (jtag_led),
+        .ctr                 (ctr),
 `endif
         .efpga_write_data_o  (usb_write_data),
-        .efpga_write_strobe_o(usb_write_strobe)
+        .efpga_write_strobe_o(usb_write_strobe),
+        .from_efpga_data_i   (from_efpga_data),
+        .from_efpga_valid_i  (from_efpga_valid),
+        .from_efpga_ready_o  (from_efpga_ready),
+        .to_efpga_data_o     (to_efpga_data),
+        .to_efpga_valid_o    (to_efpga_valid),
+        .to_efpga_ready_i    (to_efpga_ready)
     );
 
 
