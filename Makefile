@@ -18,6 +18,10 @@ TB_BUILD_DIR := $(TB_DIR)/build
 TB_TOP_SOURCES := $(shell find . -type f \( -iname "*.v" -o -iname "*.sv" \) \
 				  -not -path "./jtag/*" \
 				  -not -path "./JTAG-interface/*" \
+				  -not -name "*ibex*" \
+				  -not -name "*top.v*" \
+				  -not -name "*manta*" \
+				  -not -path "./ibex-demo-system/*" \
 				  -not -path "*./Tile/gl/*" \
 				  -not -path "*/in_fifo/*" )
 TB_INCLUDE_DIRS += ./common_constants/ ./controller/usb_common/
@@ -74,6 +78,7 @@ $(TB_BUILD_DIR)/%.vvp: $(TB_BUILD_DIR)
 	python3 ${TB_DIR}/makehex.py ${DESIGN_BITSTREAM} ${MAX_BITBYTES} ${DESIGN_BITSTREAM_HEX}
 	(cd $(TB_DIR) && vvp build/$*.vvp -fst)
 
+jtag_bridge_tb \
 in_fifo_tb \
 phy_rx_tb \
 eFPGA_top_tb \
